@@ -12,7 +12,7 @@ void setup() {
 float  anim = 0;
 void draw(){
     anim += 0.05;
-    noLoop();
+    //noLoop();
     background(0);
 
     translate(width / 2, height / 2);
@@ -36,11 +36,34 @@ void draw(){
 void drawHyps(){
     pushMatrix();
     float step = width / 320.;
-    for (int x = 0; x < 30; x++) {
-        drawHyp(x * 3000, step);
+    for (int n = 0; n < 10; n++) {
+        drawHyp(n * 3000, step);
     }
-
     popMatrix();
+    
+    
+    fill(255);
+     
+    for (int m = 1; m < 10; m++) {
+       beginShape();
+      for (int n = 1; n < 10; n++) {
+        float x =  funcR(n * 3000, 10*m*sin(anim/3));   ;//pow(n, m) * 30  +(sin(anim)-2.)*width/4;
+        float y = func(n * 3000, x);
+        ellipse(x, y, 10, 10);
+        vertex(x, y);
+      }
+       stroke(255, 0,0,120);
+      strokeWeight(4);
+      endShape();
+    }
+}
+
+float func(float n, float x){
+  return (4 * n) / x ;
+}
+
+float funcR(float n, float y){
+  return (0.25 * n) / y;
 }
 
 void drawHyp(int n, float step){
@@ -52,7 +75,7 @@ void drawHyp(int n, float step){
     strokeWeight(4);
     beginShape();
     for (float x = 0.001; x < width * 2; x += step) {
-        float y = (n) / (x / 4);
+        float y =func(n, x);
         vertex(x, y);
     }
     endShape();
