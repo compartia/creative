@@ -1,47 +1,47 @@
 PFont mono;
-float font_size = 15;
+float font_size = 26;
 
 int framesToSave = 1;//30 * 30;
 
 int fps=30;
 int animationLen = 20 * fps;
 
-String txt="Темнокожие комми-\n"+
-"вояжеры мысленные\n"+
-"тянут из прежнего \nбаржи порожних гимнов.\n"+
-"Тростником сахарным заросли речи,\n"+
-"берега аппарата накрашены кетчупом,\n"+
-"на хлопчато-неважных встречах разводим подсчет овечек --\n"+
-"вычисление индекса нежности на единицу евро.\n"+
-"Раб электронной лампы натирает экраны,\n"+
-"социальное желание -- это гидромассажная ванна\n"+
-"с пузырями экономическими, в которой барахтаясь,\n"+
-"фекалия человеческой субъективности\n"+
-"исполняет приказ общества демонстративно\n"+
-"получать от него удовольствие.\n"+
-"Душа-недотрога, тело без органов,\n"+
-"ментальная светопись, фотовспышка вечности\n"+
-"арестована здесь ходзёдзюцу-мастером дождевого леса.\n"+
-"Оптическими лианами, коаксиальными стеблями\n"+
-"и витыми ветвистыми парами\n";
+ 
 
 
-PVector[] coords =new PVector[txt.length()];
+String txt="приходи\n"+
+"birthday_party\n"+
+"privet_annette\n"+
+"1 февраля 2020\n"+
+"суббота\ndress_code: be_sexy\n"+
+"кутузовский_проспект 12 стр 9\n"+
+"campus_zavod\n"+
+"жду тебя\n"+
+"15:00\n";
+
+
+
+PVector[] coords;
 PVector[] targetCoords;
 
 float  anim = 0;
 
 void setup() {
-    size(640, 640);
-    background(0);
+  //txt+=txt;
+  //txt+=txt;
+  
+   
+  txt = txt.toUpperCase();
+    size(540, 960);
+    background(0, 0, 100);
     frameRate(30);
-    smooth(8);
-    pixelDensity(2); //retina
+    smooth(4);
+    //pixelDensity(2); //retina
     background(0);
 
 
     textSize(14);
-    String fn = "Roboto-MediumItalic.ttf";
+    String fn = "Roboto-Light.ttf";
     mono = createFont(fn, font_size);
     textFont(mono);
     
@@ -52,9 +52,13 @@ void setup() {
 
 void makeData(){
  int len = txt.length();
- 
+ coords =new PVector[txt.length()];
  for (int f = 0; f < len; f++) {
-   coords[f] = new PVector(random(width*2)-width/2, random(width*2)-width/2);
+   //coords[f] = targetCoords[(int)random(len)].x ;
+   coords[f] = new PVector(random(width/4)-width/8 + targetCoords[(f+(int)random(5))%len].x, targetCoords[f].y);
+   //new PVector(random(width*2)-width/2, random(width*2)-width/2);
+   //coords[f].mult(1.6);
+   //coords[f].add(targetCoords[f]);
  }
 }
 
@@ -67,15 +71,15 @@ PVector[] calcTargetCoords( ){
  
     for (int f = 0; f < txt.length(); f++) {
         char lc = txt.charAt(f);
-        String l = "" + lc;
-        float letterW = textWidth(l) * 0.9;
-        boolean space = lc == ' ' || lc == '.'|| lc == ','|| lc == '-';
-        if (space) {
-            letterW = font_size;
-        }
-        if (tPosX > width * 1.2 || lc == '\n') {
-            tPosX = (f % 2) * font_size * 2;
-            tPosY += font_size * 1.5;
+        float letterW = textWidth("" + lc);
+       // boolean space = lc == ' ' || lc == '.'|| lc == ','|| lc == '-';
+        //if (space) {
+        //    letterW = font_size;
+        //}
+        if (lc == '\n') {
+           // tPosX = (f % 2) * font_size * 2;
+           tPosX = sin(f)*100;
+           tPosY += font_size * 2.8;
         }
         
         
@@ -94,23 +98,35 @@ void draw(){
     anim += 2 * PI / 300;
     if(random(1)<0.01){
       background(random(255));
-      scale(0.98);
+      //scale(0.98);
     }
     else{
       //background(0);
-      fill(0, random(250));
+      //fill(0, random(250));
+      fill(0, 0, 70, 70);
       rect(0, 0, width, height);
     
     }
 
-    scale(0.9);
+    //scale(0.9);
     float endSpeed = -0;
  
 
     blendMode(BLEND);
     fill(255);
      
-    renderText( );
+    
+    //pushMatrix();
+    //renderText( (int ) (sin(frameCount/200.)*400));
+    //popMatrix();
+    
+    //fill(0, 0, 70, 170);
+    //rect(0, 0, width, height);
+     pushMatrix();
+    renderText(frameCount -100);
+    
+    //renderText(frameCount +320);
+    popMatrix();
     
 
 
@@ -127,32 +143,38 @@ void draw(){
 
 
 
-void drawLetter(char l, float x, float y, float speed){    
+void drawLetter(char l, float x, float y, float speed, float rotation){    
     PShape shape = mono.getShape(l);
-    drawShape(shape, x, y, speed);     
+    drawShape(shape, x, y, speed, rotation);     
 }
 
-void renderText( ){
+void renderText( int fc){
 
 
     pushMatrix();
-    translate(120, 230);
-    rotate(-radians(10));
+    translate(120, 260);
+    rotate(-radians(15));
     scale(0.8);
  
-    txt = txt.toUpperCase();
+    translate(random(1), 0);
     
     int len = txt.length();
     
     float  lettersPerFrame = (float)animationLen / (float)len;
-    println(lettersPerFrame+" " + animationLen +" "+ len);
+    //println(lettersPerFrame+" " + animationLen +" "+ len);
     
-    
+    //for (int f = 0; f < len; f++) {
+    //  fill(255, 40);
+    //  PVector tPos = targetCoords[f];
+    //  drawSpace(tPos.x, tPos.y-font_size/2, random(4),1);
+    //}
     for (int f = 0; f < len; f++) {
       
       
-      int phase = (frameCount +(len-f)) % animationLen;
-      float phasep = 3 * (float)phase / (float)animationLen;
+      int phase = (fc +(len-f)) % animationLen;
+      float phasep = 6 * (float)phase / (float)animationLen;
+      
+      phasep=(sin(phasep*5)+1.3)/2;
       
       PVector tPos = targetCoords[f];
        
@@ -163,21 +185,22 @@ void renderText( ){
         float ly = tPos.y;
          
         float blend =phasep;// sin(sin(anim*2)*3)/10;
+        blend= sqrt(blend);
         if(blend>1) blend=1;
        
        //float blend=1;
+       
         lx = lerp(coords[f].x, tPos.x,  blend);
         ly = lerp(coords[f].y, tPos.y,  blend);
         
-
-       
-       
  
         {
           
-            fill(255);
+            fill(255, blend*255);
             //if (random(1) > 0.01)
-                drawLetter(lc, lx, ly, 1);
+                //drawLetter(lc, lx, ly, 1, 2*PI*sin(1*PI*blend));
+                //drawLetter(lc, lx, ly, 1, -PI*(1-blend));
+                drawLetter(lc, lx, ly, 1, 0);
         }
 
  
@@ -233,8 +256,12 @@ void drawSpace(float xx, float time0, float rad, float speed){
 
 }
 
-void drawShape(PShape shape, float xx, float yy, float speed){
-
+void drawShape(PShape shape, float xx, float yy, float speed, float rotation){
+  pushMatrix();
+  translate(xx, yy);
+    rotate(rotation);
+    translate(-xx, -yy);
+    
     float as=abs(speed);
     int alph = 255 - (int)(as * 255);
 
@@ -247,7 +274,7 @@ void drawShape(PShape shape, float xx, float yy, float speed){
     //fill(255, alph);
     noStroke();
     endShape();
-
+popMatrix();
 }
 
 
