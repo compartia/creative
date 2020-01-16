@@ -1,8 +1,7 @@
 PFont mono;
 float font_size = 13;
 
-int framesToSave = 1;//30 * 30;
-
+int framesToSave = 30 * 30;
  
 static String txt1 = "Небо - портьера с бахромой медузы\n"+
 "Осадков жгучие щупальца жалкие\n"+
@@ -52,8 +51,6 @@ String txt="Темнокожие комми-\n"+
 "орденов за бездействие моего церебрального дерева.";
 
 
-PVector[] coords =new PVector[txt.length()];
-
 float  anim = 0;
 
 void setup() {
@@ -69,14 +66,12 @@ void setup() {
     String fn = "Roboto-MediumItalic.ttf";
     mono = createFont(fn, font_size);
     textFont(mono);
-    
-    makeData();
 }
 
 void draw(){
     
     anim += 2 * PI / 300;
-    if(random(1)<0.01){
+    if(random(1)<0.05){
       background(random(255));
       scale(0.98);
     }
@@ -93,31 +88,23 @@ void draw(){
 
     blendMode(BLEND);
     fill(255);
-     
-    renderText( );
+    float velocity = (1 + sin(6*sin(anim * 0.5))) * 0.09;
+    renderText(endSpeed - velocity);
     
    
 
 
 
-//    if (frameCount < framesToSave) {
-//        println(frameCount + " ");
-//        saveFrame("/Users/artem/work/creative-code/opart_20_poem/opart__####.tif");
-//    } else {
-//        noLoop();
-//    }
+    if (frameCount < framesToSave) {
+        println(frameCount + " ");
+        saveFrame("/Users/artem/work/creative-code/opart_19_poem/opart__####.tif");
+    } else {
+        noLoop();
+    }
 
 }
 
-
-void makeData(){
- int len = txt.length();
  
- 
- for (int f = 0; f < len; f++) {
-   coords[f]=new PVector(random(width), random(width));
- }
-}
 
 
 void drawLetter(char l, float x, float y, float speed){    
@@ -125,7 +112,7 @@ void drawLetter(char l, float x, float y, float speed){
     drawShape(shape, x, y, speed);     
 }
 
-void renderText( ){
+void renderText(float speed){
 
 
     pushMatrix();
@@ -149,19 +136,11 @@ void renderText( ){
             tPosX = (f % 2) * font_size * 2;
             tPosY += font_size * 1.5;
             
-            tPosX+= sin(tPosY + anim/2) * 140 * (f % 2);
+            tPosX+= sin(tPosY + anim*2) * 40 * (f % 3);
         }
         
-        float lx = tPosX;
-        float ly = tPosY;
-        if(f > frameCount % len){
-          float blend = sin(sin(anim*2)*3)/10;
-          if (blend<0) blend=0;
-          lx = lerp(tPosX, coords[f].x,  blend);
-          ly = lerp(tPosY, coords[f].y,  blend);
-        }
 
-        float speedk = 1;//speed + tPosX / (width * 6);
+        float speedk = speed + tPosX / (width * 6);
        
 
         if (space) {
@@ -169,13 +148,13 @@ void renderText( ){
                 fill(0);
             else
                 fill(255);
-            drawSpace(lx + letterW / 2, ly - font_size * 0.4, font_size * 0.15, speedk);
+            drawSpace(tPosX + letterW / 2, tPosY - font_size * 0.4, font_size * 0.15, speedk);
         }
         else {
           
             fill(255);
             if (random(1) > 0.01)
-                drawLetter(lc, lx, ly, speedk);
+                drawLetter(lc, tPosX, tPosY, speedk);
         }
 
         tPosX += letterW ;
@@ -193,20 +172,15 @@ void renderText( ){
 
 static float c = 1.; //speed of light = 1, for normalization
 
-PVector lorentz(float space1, float time1, float v){
-    //float gammaLorentzFactor = 1 / sqrt(1 - v * v / c * c);
+PVector lorentz(float space, float time, float v){
+    float gammaLorentzFactor = 1 / sqrt(1 - v * v / c * c);
 
-    //float time1 = gammaLorentzFactor * (time - v * space / c * c);
-    //float space1 = gammaLorentzFactor * (space - v * time);
+    float time1 = gammaLorentzFactor * (time - v * space / c * c);
+    float space1 = gammaLorentzFactor * (space - v * time);
 
 
-    float r = sqrt((space1+200)*(space1+200) + (time1+200)*(time1+200))/60;
-    //space1+=15*sin(anim*3+r/30.);    
-    time1+=2*cos(anim*8+time1/30.);
-    
-    time1+=2*cos(anim*2+r);
-    space1+=2*sin(anim*2+r);
-    
+    space1+=2*sin(anim*3+space/30.);
+    time1+=4*cos(anim*8+time/30.);
     return new PVector(space1, time1);
 }
 
