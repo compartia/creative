@@ -1,13 +1,14 @@
 PFont mono;
-float font_size = 26;
-
+float font_size = 37;
+int DY= (int)(font_size*1.4);//(int)(font_size * 2);
 int framesToSave = 20 * 30;
 
 int fps=30;
 int animationLen = 20 * fps;
-int DY= (int)(font_size * 2);
- 
 
+ 
+double spectrum_start = 390e-3; //(micrometers)
+double spectrum_end = 700e-3;
 
 String txt="приходи\n"+
 "birthday_party\n"+
@@ -41,7 +42,7 @@ void setup() {
 
 
     //textSize(14);
-    String fn = "Roboto-Medium.ttf";
+    String fn = "UbuntuMono-Bold.ttf";
     mono = createFont(fn, font_size);
     textFont(mono);
     
@@ -55,7 +56,7 @@ void makeData(){
  coords =new PVector[txt.length()];
  for (int f = 0; f < len; f++) {
    //coords[f] = targetCoords[(int)random(len)].x ;
-   coords[f] = new PVector(random(width/4)-width/8 + targetCoords[(f+(int)random(5))%len].x, targetCoords[f].y);
+   coords[f] = new PVector(random(width/40)-width/80 + targetCoords[(f+(int)random(5))%len].x, targetCoords[f].y);
    //new PVector(random(width*2)-width/2, random(width*2)-width/2);
    //coords[f].mult(1.6);
    //coords[f].add(targetCoords[f]);
@@ -95,7 +96,7 @@ PVector[] calcTargetCoords( ){
 
 void draw(){
     
-    anim += 2 * PI / 300;
+    anim += 4 * PI / animationLen;
     if(random(1)<0.01){
       background(random(255));
       //scale(0.98);
@@ -103,7 +104,7 @@ void draw(){
     else{
       //background(0);
       //fill(0, random(250));
-      fill(0, 0, 50, 130);
+      fill(0, 0, 50, 80);
       rect(0, 0, width, height);
     
     }
@@ -122,8 +123,8 @@ void draw(){
     
     //fill(0, 0, 70, 170);
     //rect(0, 0, width, height);
-     pushMatrix();
-    renderText(frameCount -100);
+    pushMatrix();
+    renderText(frameCount -200);
     
     //renderText(frameCount +320);
     popMatrix();
@@ -132,7 +133,7 @@ void draw(){
 
     if (frameCount < framesToSave) {
         println(frameCount + " ");
-        saveFrame("/Users/artem/work/creative-code/opart_21_inv2/opart__####.tif");
+        //saveFrame("/Users/artem/work/creative-code/opart_21_inv4/opart__####.tif");
     } else {
         noLoop();
     }
@@ -266,7 +267,16 @@ void renderText( int fc){
  
         {
             float rot= 0;//PI*(1-blend); 
-            fill(255, blend*255);
+            //fill(255, blend*255);
+            //double spectrum_start = 390e-3; //(micrometers)
+            //double spectrum_end = 700e-3;
+            if(blend<0.95){
+              //float wavelen = (float)(spectrum_start + random(1)*(spectrum_end - spectrum_start)) ;
+              float wavelen = (float)(spectrum_start + random(1)*(spectrum_end - spectrum_start)) ;float wavelen = (float)(spectrum_start + random(1)*(spectrum_end - spectrum_start)) ;
+              fill(waveLengthToRGB(wavelen * 1e3), blend*255);
+            }else{
+              fill(255, blend*255);
+            }
             //if (random(1) > 0.01)
                 //drawLetter(lc, lx, ly, 1, 2*PI*sin(1*PI*blend));
                 drawLetter(lc, lx, ly, 1, rot);
@@ -286,7 +296,12 @@ void renderText( int fc){
     // stroke(255, 0,0, 60);
     //  line(s.r0.x, s.r0.y, s.r1.x, s.r1.y);
     //}
-    drawRays( sides);
+   
+    drawRays( sides, 350, anim/2);
+    drawRays( sides, 350, anim-PI/2); 
+    drawRays( sides, 400, anim*0.43+PI);
+    
+    
     blendMode(BLEND);
     popMatrix();
 
@@ -431,7 +446,7 @@ PVector[] refractWith( PVector _r0, PVector _r1, Side wall, float waveLength){
 
     float ior = ri_by_wl(waveLength, (float)refractive_index);
     PVector refracted = refract(ray_dir, wall_dir, ior);
-    refracted.setMag(width*1.5);
+    refracted.setMag(width*2.5);
     refracted.add(hit);
 
     PVector[] ret = new PVector[2];
@@ -447,13 +462,13 @@ void mouseReleased() {
 }
 
 
-double spectrum_start = 390e-3; //(micrometers)
-double spectrum_end = 700e-3;
-int totalRays=265;
-double delta_spectrum = (spectrum_end - spectrum_start) / (double)totalRays;
-int strokeAlpha = (int)(8. * 255. / (float)totalRays);
-void drawRays(ArrayList<Side> sides) {
 
+
+
+
+void drawRays(ArrayList<Side> sides, int totalRays, float anim) {
+  int strokeAlpha = (int)(8. * 255. / (float)totalRays);
+  double delta_spectrum = (spectrum_end - spectrum_start) / (double)totalRays;
      
     blendMode(ADD);    
      
@@ -466,11 +481,21 @@ void drawRays(ArrayList<Side> sides) {
     for (int i = 0; i < totalRays; i++) {
         int k = (int)random(totalRays);
 
-        //float y0 = offsetY + k * offset + 20;
-        float xxx = -100.+random(i)/12.;;//(int)((i*offset-100)/sp) * sp-510;
-        PVector r0 = new PVector(-600, xxx+frameCount*1.05);
-        PVector r1 = new PVector(0, 1);
-        r1.rotate(-PI/2 +0.8*sin(-PI/8+anim/1.7));
+    
+        
+        //float xxx = -100.+random(i)/12.;;//(int)((i*offset-100)/sp) * sp-510;
+        //PVector r0 = new PVector(-700, xxx + anim * 50);
+        //PVector r1 = new PVector(0, 1);
+        //r1.rotate(-PI/2 +0.8*sin(-PI/8+anim/1.7));
+        //r1.setMag(height*2);
+        //r1.add(r0);
+        
+        
+        
+        float xxx = random(i)/22.;;//(int)((i*offset-100)/sp) * sp-510;
+        PVector r0 = new PVector(-500, -50+xxx+ width/2 + sin(anim*0.53) * width/2.2);
+        PVector r1 = new PVector(0, 1.1);
+        r1.rotate(rotrot);
         r1.setMag(height*2);
         r1.add(r0);
         
@@ -500,8 +525,8 @@ void drawRays(ArrayList<Side> sides) {
 
         strokeWeight(2);
         noFill();
-        int[] clr = waveLengthToRGB(wavelen * 1e3);
-        stroke(clr[0], clr[1], clr[2], strokeAlpha);
+   
+        stroke(waveLengthToRGB(wavelen * 1e3), strokeAlpha);
         beginShape();
         {
             for (PVector p : points) {
@@ -546,7 +571,7 @@ static private double IntensityMax = 255;
 /** Taken from Earl F. Glynn's web page:
 * <a href="http://www.efg2.com/Lab/ScienceAndEngineering/Spectra.htm">Spectra Lab Report</a>
 * */
-public static int[] waveLengthToRGB(double Wavelength){
+public color waveLengthToRGB(double Wavelength){
     double factor;
     double Red, Green, Blue;
 
@@ -600,5 +625,5 @@ public static int[] waveLengthToRGB(double Wavelength){
     rgb[1] = Green == 0.0 ? 0 : (int) Math.round(IntensityMax * Math.pow(Green * factor, Gamma));
     rgb[2] = Blue == 0.0 ? 0 : (int) Math.round(IntensityMax * Math.pow(Blue * factor, Gamma));
 
-    return rgb;
+    return color(rgb[0], rgb[1], rgb[2]) ;
 }
