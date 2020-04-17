@@ -5,9 +5,9 @@ int R = 170;// size of flake
 
 boolean SHOW_LEGEND = true;
 boolean SHOW_DATA = false;
-boolean SHOW_FLAKE = true;
+boolean SHOW_FLAKE = false;
 
-boolean SHOW_ORDER = true;
+boolean SHOW_ORDER = false;
 
 
 float hex_aspect = sin(2.*PI/3);
@@ -68,7 +68,7 @@ void draw(){
       pushMatrix();
       rotate(  k*PI/3);
       {
-        drawSector(k, digits);
+        drawSector( digits);
       }
       popMatrix();
     }
@@ -117,7 +117,7 @@ void drawPixel(float r, int value, color[] bits_pal, boolean add_hex){
 /**
 renders 1/12 sector of a hexagon
 **/
-void drawSectorHalf(int k, int[] digits, color[] bits_pal){
+void drawSectorHalf( int[] digits, color[] bits_pal){
   float rd =  R/15;  
   
   noStroke();
@@ -168,12 +168,12 @@ void drawSectorHalf(int k, int[] digits, color[] bits_pal){
   println(n);
 }
 
-void drawSector(int k, int[] digits){
+void drawSector( int[] digits){
   pushMatrix();
   {
-    drawSectorHalf(k, digits, bits_pal);
+    drawSectorHalf( digits, bits_pal);
     scale(-1,1);
-    drawSectorHalf(k*2+1, digits, bits_pal);
+    drawSectorHalf( digits, bits_pal);
   }
   popMatrix();  
 }

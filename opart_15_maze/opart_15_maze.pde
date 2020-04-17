@@ -1,4 +1,5 @@
- 
+float anim=0;
+
 void setup() {
     size(640, 640);
     background(0);
@@ -9,25 +10,10 @@ void setup() {
 }
 
  
-float  anim=0;
+
 void draw(){
   anim+=0.05;
-  //noLoop();
-   //background(0);
-   
-   //fill(255);
-   //noStroke();
-   //float ss=9.;
-   //for(float x=0.001; x<width; x+=width/ss){
-   //  rect(x,0,width/(ss*2.),height);     
-   //}
-   
-    
-   //noFill();
-   //stroke(255);
-   //strokeWeight(2);
-   
-   
+     
    translate(width/2, height/2);
    rotate(anim);
    scale(0.4);
@@ -58,16 +44,14 @@ void drawHyps(){
  
 void drawHyp(int n, float step){
   blendMode(DIFFERENCE);
-  //blendMode(ADD);
+ 
   int r  = (int)(127*sin(random(PI)/2+n/2000.) + 128);
   int g  = (int)(127*sin(random(PI)/2+n/3000.) + 100);
   int b  = (int)(127*sin(random(PI)/2+n/2900.) + 128);
   fill(r, g, b);
   noStroke();
   
-  //noFill();
-  // stroke(255);
-   
+    
    beginShape();
    for(float x=0.001; x<width*2; x+=step){
      float y=(n+400)/(x/4);
