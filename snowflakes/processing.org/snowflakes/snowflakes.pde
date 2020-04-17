@@ -3,12 +3,12 @@ int BASE=6; //encoding base; 2 for binary; 10 is max
 //@deprecated
 int R = 170;// size of flake
 
-boolean SHOW_LEGEND = true;
-boolean SHOW_DATA = false;
-boolean SHOW_FLAKE = false;
+boolean SHOW_LEGEND = false;
+boolean SHOW_DATA = true;
+ 
 
 boolean SHOW_ORDER = false;
-
+boolean SHOW_FLAKE = true;
 
 float hex_aspect = sin(2.*PI/3);
 
@@ -64,7 +64,7 @@ void draw(){
   if (SHOW_FLAKE) {
     translate(width/2, height/2);
   
-    for (int k=0; k<1; k+=1){
+    for (int k=0; k<6; k+=1){
       pushMatrix();
       rotate(  k*PI/3);
       {
