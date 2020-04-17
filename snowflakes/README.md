@@ -1,8 +1,9 @@
 
 # Snowcode
 
-![Legend](sample1.png)
 
+
+![Legend](grid.png)
 
 The aim of this project is to build an aesthetically attractive graphical data coding system similar in a way to QR-codes.
 
@@ -18,4 +19,4 @@ Thus, the data is duplicated 12 times. This level of redundancy minimizes the er
 
 ![Legend](sample2.png)
 
-
+![Legend](sample1.png)
