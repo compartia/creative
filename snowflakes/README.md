@@ -1,4 +1,9 @@
 
+#snowcode
+
+![Legend](sample1.png)
+
+
 The aim of this project is to build an aesthetically attractive graphical data coding system similar in a way to QR-codes.
 
 The triangular segment of the hexagonal grid was selected as the structure for placing the numbers.
@@ -10,5 +15,7 @@ Triangles (or sectors) are organized by rotation and reflection into a hexagonal
 Thus, the data is duplicated 12 times. This level of redundancy minimizes the error rate of a recognition system.
  
 ![Legend](order.png)
+
+![Legend](sample2.png)
 
 
