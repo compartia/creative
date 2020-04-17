@@ -31,8 +31,7 @@ int[] hashDigits(String data, int BASE){
   int [] ret = new int[ s.length()];
  
   for (int i =0; i< s.length(); i++){
-    ret[i] = Integer.parseInt(s.substring(i, i+1));
-    print(ret[i]);
+    ret[i] = Integer.parseInt(s.substring(i, i+1));     
   }
   
   return ret;

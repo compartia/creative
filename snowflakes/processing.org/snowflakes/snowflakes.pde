@@ -12,7 +12,7 @@ boolean SHOW_FLAKE = true;
 
 boolean SHOW_GRID = false;
 
-boolean SAVE_TRAINSET=false;
+boolean SAVE_TRAINSET=true;
 
 float hex_aspect = sin(2.*PI/3);
 
@@ -92,6 +92,8 @@ void draw(){
   if(SAVE_TRAINSET){
     if(frameCount<500)
       save_trainset(table, nm, convertStringToBase(nm,   BASE));
+    else noLoop();
+     
   }
   //saveFrame("/Users/artem/work/creative-code/show/1/snow__####.png");
 }
@@ -168,7 +170,6 @@ void drawSectorHalf( int[] digits, color[] bits_pal){
   noStroke();
 
   int pal_offset=digits[ 4 ];
-  
   
   int n=0;
   noStroke();
