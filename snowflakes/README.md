@@ -3,7 +3,7 @@
 
 
 
-![Legend](grid.png)
+![Grid](grid.png)
 
 The aim of this project is to build an aesthetically attractive graphical data coding system similar in a way to QR-codes.
 
@@ -17,6 +17,8 @@ Thus, the data is duplicated 12 times. This level of redundancy minimizes the er
  
 ![Legend](order.png)
 
-![Legend](sample2.png)
+![Sample](sample3.png)
 
-![Legend](sample1.png)
+![Sample](sample1.png)
+
+![Sample](grid2.png)
