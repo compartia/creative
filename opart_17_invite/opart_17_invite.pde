@@ -1,7 +1,7 @@
 PFont mono;
 float font_size = 12;
 static String name = "кто хочет";
-static String txt = "среда 15 января 2020 год 18 часов " + name + " приди " + name + " явись black beach resto 2 этаж hannoman штрассэ " + name + " приди еда питье ";
+static String txt = "дата число месяц номер года время часов " + name + " приди " + name + " явись в место и его адрес " + name + " приди там еда питье ";
 float  anim = 0;
 
 void setup() {
@@ -26,10 +26,8 @@ void draw(){
 
 
     float endSpeed = 0.15;
-    float startSpeed = -0.3;
-    float ds = (endSpeed - startSpeed);
-
-
+    
+  
     blendMode(BLEND);
     fill(255);
     renderText(endSpeed - (1 + sin(anim * 2)) * 0.05);
@@ -39,7 +37,7 @@ void draw(){
 
     if (frameCount < 15 * 30) {
         println(frameCount + " ");
-        saveFrame("/Users/artem/work/creative-code/opart_17_invite/" + name + "/opart__####.tif");
+        //saveFrame("/Users/artem/work/creative-code/opart_17_invite/" + name + "/opart__####.tif");
     } else {
         noLoop();
     }
@@ -162,9 +160,4 @@ void drawShape(PShape shape, float xx, float yy, float speed){
 }
 
 
-
-
-void mouseReleased() {
-    println(frameCount + " ");
-    saveFrame("/Users/artem/work/creative-code/opart_17_invite/opart__####.png");
-}
+ 
