@@ -17,7 +17,6 @@ void draw(){
     rect(0, 0, width, width);
 
 
-
     translate(width / 2, height / 2);
 
     scale(0.33);
@@ -57,7 +56,7 @@ PVector lorentz(float space, float time, float v){
 void drawHyperbola(float space, float time){
     beginShape();
     {
-        // velocity relative to speed of light
+         
         for (float velocity = -0.99; velocity <= 0.99; velocity += 0.01) {
             PVector r = lorentz(space, time, velocity);
             vertex(r.x, r.y);
@@ -87,7 +86,7 @@ void drawCircle(float xx, float time0, float rad, int frame_offset){
             PVector r = lorentz(x, time, speed);
             vertex(r.x, r.y);
         }
-        //fill(red, 50, blue);
+         
         fill(255, alph);
         noStroke();
     }
