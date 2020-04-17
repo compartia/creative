@@ -1,20 +1,38 @@
 
+String convertStringToBase(String data, int BASE){
+  
+  try{
+    byte[] byteArr = data.getBytes("UTF-8");   
+    String s = new java.math.BigInteger(1, byteArr).toString(BASE);
+    return s;
+  }
+  catch(Exception ex){}    
+  return "000000"; 
+}
 
+
+String restoreData(String s){
+  java.math.BigInteger bi = new java.math.BigInteger(s , BASE);
+  byte[] barr = bi.toByteArray();
+  
+  try{
+    return (new String(barr, "UTF-8"));    
+  }
+  catch(Exception ex){
+     return "";  
+  }  
+ 
+}
 
 
 int[] hashDigits(String data, int BASE){
-  byte[] byteArr = data.getBytes();
+  String s = convertStringToBase(  data,  BASE);
   
-  String s = new java.math.BigInteger(1, byteArr).toString(BASE);
-  
-  int reserve = 3;
-  int [] ret = new int[reserve+s.length()];
-  ret[0]=1;
-  ret[1]=2;
-  ret[2]=3;
+  int [] ret = new int[ s.length()];
+ 
   for (int i =0; i< s.length(); i++){
-    ret[i+reserve] = Integer.parseInt(s.substring(i, i+1));
-    print(ret[i]);
+    ret[i] = Integer.parseInt(s.substring(i, i+1));     
   }
+  
   return ret;
 }

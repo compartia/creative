@@ -1,7 +1,8 @@
 
-String[] names = {"John", "Bill", "Barandomumdiy", "Folamerando"};
-String[] lnames = {"Smith", "Jameson", "Bush", "Mc Something"};
+String[] names = {"John", "Bill", "Еще Кирилица", "Folamerando"};
+String[] lnames = {"Smith", "Кирилица", "Bush", "Mc Something"};
 String[] genders = {"m", "f", "?"};
+
 
 String getRandomName(){
   String ret="";

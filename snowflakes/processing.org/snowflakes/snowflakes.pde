@@ -1,14 +1,18 @@
 
 int BASE=6; //encoding base; 2 for binary; 10 is max
 //@deprecated
-int R = 170;// size of flake
+float R = 170;// size of flake
 
 boolean SHOW_LEGEND = false;
-boolean SHOW_DATA = true;
+boolean SHOW_DATA = false;
  
 
 boolean SHOW_ORDER = false;
 boolean SHOW_FLAKE = true;
+
+boolean SHOW_GRID = false;
+
+boolean SAVE_TRAINSET=true;
 
 float hex_aspect = sin(2.*PI/3);
 
@@ -35,45 +39,86 @@ color[] bits_pal = {
 
 
 void setup() {
-  size(640, 640);  
+  size(512, 512);
+  //size(1080, 1080);
   background(0);
-  frameRate(1);
-  smooth(2);
-  pixelDensity(2);  
+  frameRate(30);
+  smooth(4);
+  pixelDensity(1);  
   
   //noLoop();
+  R = width/3.5;
 }
 
+
+Table table =  initTrainsetMeta();
+ 
  
 void draw(){
   background(10);
-  
+   
   String nm = getRandomName();
-  int[] digits = hashDigits( nm, BASE );
-
-  if (SHOW_DATA){
-    fill(128);    
-    text(nm, 20, 20);
-  }
-    
+     
   if (SHOW_LEGEND){
     drawLegend();
   }
   
-
+  
   if (SHOW_FLAKE) {
     translate(width/2, height/2);
-  
-    for (int k=0; k<6; k+=1){
-      pushMatrix();
-      rotate(  k*PI/3);
-      {
-        drawSector( digits);
-      }
-      popMatrix();
-    }
+    drawFlake(nm);
   }
   
+  
+  if(SHOW_GRID){
+    pushMatrix();
+    int grid_size = 3;
+    float cell_size = width/grid_size;
+    float aspect = cell_size/width;
+    for (int x=0; x<grid_size; x++){
+      for (int y=0; y<grid_size; y++){
+        pushMatrix();
+        float xx = x * cell_size + cell_size/2;
+        float yy = y * cell_size + cell_size/2;
+        translate(xx, yy);
+        scale(aspect);
+        drawFlake(getRandomName());
+        popMatrix();
+      }
+    }
+    popMatrix();
+  }
+  
+  if(SAVE_TRAINSET){
+    if(frameCount<500)
+      save_trainset(table, nm, convertStringToBase(nm,   BASE));
+    else noLoop();
+     
+  }
+  //saveFrame("/Users/artem/work/creative-code/show/1/snow__####.png");
+}
+
+
+void drawFlake(String nm){
+  pushMatrix();
+  int[] digits = hashDigits( nm, BASE );
+  
+  if (SHOW_DATA){
+    fill(128);    
+    text(nm, 20, 20);
+  }
+ 
+ 
+  for (int k=0; k<6; k+=1){
+    pushMatrix();
+    rotate(  k*PI/3);
+    {
+      drawSector( digits);
+    }
+    popMatrix();
+  }
+ 
+  popMatrix();
   
   //saveFrame("/Users/artem/work/creative-code/show/1/snow__####.png");
 }
@@ -83,7 +128,7 @@ void draw(){
 void drawPixel(float r, int value, color[] bits_pal, boolean add_hex){
   pushStyle();
   pushMatrix();
-  //TODO: either make it complex shape, or replace with just a line
+  
 
   float skew = 0;
   float th = r * 0.38;
@@ -91,6 +136,7 @@ void drawPixel(float r, int value, color[] bits_pal, boolean add_hex){
   float angle  = PI/2 + value * PI/3  ; 
   
   rotate(angle );
+
 
   if(add_hex){
     stroke(255, 50);
@@ -102,6 +148,7 @@ void drawPixel(float r, int value, color[] bits_pal, boolean add_hex){
   noStroke();
   fill( bits_pal[  (value) % bits_pal.length  ] );
    beginShape();{
+     //TODO: either make it complex shape, or replace with just a line
      vertex(-th/2, -r/2);
      vertex(+th/2, -r/2 +skew);
      vertex(+th/2, r/2 +skew);
@@ -123,7 +170,6 @@ void drawSectorHalf( int[] digits, color[] bits_pal){
   noStroke();
 
   int pal_offset=digits[ 4 ];
-  
   
   int n=0;
   noStroke();
@@ -165,7 +211,7 @@ void drawSectorHalf( int[] digits, color[] bits_pal){
     }
   
   }
-  println(n);
+   
 }
 
 void drawSector( int[] digits){
