@@ -21,11 +21,14 @@ Thus, the data is duplicated 12 times. This level of redundancy minimizes the er
  
 ## Recognision
 
-We've bult Tensoflow/Keras ML model on top of EfficientNet to make sure, the data encoded in these graphical patterns could be reconstruted.
+We've built Tensoflow/Keras ML model on top of EfficientNet to make sure the data could be reconstruted by Neural Network.
+So far, the data encoded in these pretty low-res (256x256) augmented 
+graphical patterns might be recoverd with ~95% accuracy. 
 
-### Preliminary resuts
+### Preliminary tresuts
 The resuts are very promising, but more work yet to be done. 
 For details, have a look at this Colab Notebook: [notebooks/snowcode_recogition.ipynb](notebooks/snowcode_recogition.ipynb)
+
 ![Some results](training_results.png)
 
 ## More sampes
