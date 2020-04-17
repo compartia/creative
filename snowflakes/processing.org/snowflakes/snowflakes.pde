@@ -7,6 +7,8 @@ boolean SHOW_LEGEND = true;
 boolean SHOW_DATA = false;
 boolean SHOW_FLAKE = true;
 
+boolean SHOW_ORDER = true;
+
 
 float hex_aspect = sin(2.*PI/3);
 
@@ -22,12 +24,12 @@ color[] pal = {
 };
 
 color[] bits_pal = {
-  color(255,0),
-  pal[0],
-  pal[1],
-  pal[2],
-  pal[3],
-  pal[4] 
+  color(255,0), //0
+  pal[0], //1
+  pal[1], //2
+  pal[4], //3
+  pal[3], //4
+  pal[2]  //5
 };
 
 
@@ -39,7 +41,7 @@ void setup() {
   smooth(2);
   pixelDensity(2);  
   
-  noLoop();
+  //noLoop();
 }
 
  
@@ -62,9 +64,9 @@ void draw(){
   if (SHOW_FLAKE) {
     translate(width/2, height/2);
   
-    for (int k=0; k<6; k+=1){
+    for (int k=0; k<1; k+=1){
       pushMatrix();
-      rotate(PI + k*PI/3);
+      rotate(  k*PI/3);
       {
         drawSector(k, digits);
       }
@@ -76,22 +78,7 @@ void draw(){
   //saveFrame("/Users/artem/work/creative-code/show/1/snow__####.png");
 }
 
-void drawLegend(){
-  float r = 30;
-  pushStyle();
-  
-  for (int d=0; d<BASE; d++){  
-    pushMatrix();
-    translate(r*d + r, r*3);
-     
-    drawPixel(r*0.7, d, bits_pal, true);
-    fill(128);
-    text(""+d, 0, r);
-    popMatrix();
-  }
-  
-  popStyle();
-}
+
 
 void drawPixel(float r, int value, color[] bits_pal, boolean add_hex){
   pushStyle();
@@ -157,8 +144,18 @@ void drawSectorHalf(int k, int[] digits, color[] bits_pal){
           // following the grid
           float x = rd +  j*rd   -   rd * (row % 2)*0.5   -   rd * (int)(row/2);
           float y = hex_aspect * (row*rd);
-          translate(x, y);                    
-          drawPixel(rd, ci, bits_pal, false);          
+          translate(x, y);
+          
+          if (SHOW_ORDER){
+            fill(255, 100);
+            textSize(8);
+
+            text(""+n, 0,0);
+          }else{
+            drawPixel(rd, ci, bits_pal, false);
+          }
+          
+                    
           
         }
         popMatrix();
