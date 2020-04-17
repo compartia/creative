@@ -1,5 +1,5 @@
 
-#snowcode
+# Snowcode
 
 ![Legend](sample1.png)
 
