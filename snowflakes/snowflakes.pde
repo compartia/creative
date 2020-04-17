@@ -1,3 +1,16 @@
+
+int BASE=6; //encoding base; 2 for binary; 10 is max
+//@deprecated
+int R = 170;// size of flake
+
+boolean SHOW_LEGEND = true;
+boolean SHOW_DATA = false;
+boolean SHOW_FLAKE = true;
+
+
+float hex_aspect = sin(2.*PI/3);
+
+
 color[] pal = {
   color(193,24,39),
   color(255,227,0),
@@ -17,8 +30,7 @@ color[] bits_pal = {
   pal[4] 
 };
 
-float hex_aspect = sin(2.*PI/3);
- 
+
 
 void setup() {
   size(640, 640);  
@@ -26,110 +38,137 @@ void setup() {
   frameRate(1);
   smooth(2);
   pixelDensity(2);  
-}
-
-float p1=0;
-float p2=0;
-
-int hash=0;
-int BASE=6;
-
- 
- 
-int[] hashDigits(String data){
-  byte[] byteArr = data.getBytes();
-
   
-  String s = new java.math.BigInteger(1, byteArr).toString(BASE);
-  int reserve = 3;
-  int [] ret = new int[reserve+s.length()];
-  ret[0]=1;
-  ret[1]=2;
-  ret[2]=3;
-  for (int i =0; i< s.length(); i++){
-    ret[i+reserve] = Integer.parseInt(""+s.charAt(i));
-    print(ret[i]);
-  }
-  return ret;
+  noLoop();
 }
 
+ 
 void draw(){
   background(10);
-  fill(128);
-  String nm=getRandomName();
-  text(nm, 20,20);  
   
-  println(hash+" "+p1);
-  int[] digits = hashDigits(nm);
-  
-  println("digits = "+digits.length);
-  translate(width/2, height/2);
-  
-  for (int k=0; k<6; k+=1){
-    pushMatrix();
-    rotate(PI+ k*PI/3);
-    {
-      drawSector(k, digits);
-    }
-    popMatrix();
+  String nm = getRandomName();
+  int[] digits = hashDigits( nm, BASE );
+
+  if (SHOW_DATA){
+    fill(128);    
+    text(nm, 20, 20);
   }
+    
+  if (SHOW_LEGEND){
+    drawLegend();
+  }
+  
+
+  if (SHOW_FLAKE) {
+    translate(width/2, height/2);
+  
+    for (int k=0; k<6; k+=1){
+      pushMatrix();
+      rotate(PI + k*PI/3);
+      {
+        drawSector(k, digits);
+      }
+      popMatrix();
+    }
+  }
+  
   
   //saveFrame("/Users/artem/work/creative-code/show/1/snow__####.png");
 }
 
-int R=170;
-
-void drawSectorHalf(int k, int[] digits, color[] bits_pal){
-  float rd =  R/15;
-  float th = rd*0.58;
-  float skew = 0; //-rd/2 * sin(radians(30));
+void drawLegend(){
+  float r = 30;
+  pushStyle();
   
-   noStroke();
- 
-   int pal_offset=digits[ 4 ];
-    
-    
-    int n=0;
-    noStroke();
-    for (int row=0; row<30; row++){
-      for (int j=row/2; j<row; j++){
-        if(n<digits.length){
-          int ci = digits [ n ];
-          
-          fill( bits_pal[(ci+pal_offset) % BASE] );
-           
-          float x = rd +  j*rd - rd*(row % 2)*0.5 - rd * (int)(row/2);
+  for (int d=0; d<BASE; d++){  
+    pushMatrix();
+    translate(r*d + r, r*3);
+     
+    drawPixel(r*0.7, d, bits_pal, true);
+    fill(128);
+    text(""+d, 0, r);
+    popMatrix();
+  }
+  
+  popStyle();
+}
+
+void drawPixel(float r, int value, color[] bits_pal, boolean add_hex){
+  pushStyle();
+  pushMatrix();
+  //TODO: either make it complex shape, or replace with just a line
+
+  float skew = 0;
+  float th = r * 0.38;
+  
+  float angle  = PI/2 + value * PI/3  ; 
+  
+  rotate(angle );
+
+  if(add_hex){
+    stroke(255, 50);
+    noFill();
+    drawHex(0,0, 0.5*r/hex_aspect);
+  }
+
+
+  noStroke();
+  fill( bits_pal[  (value) % bits_pal.length  ] );
+   beginShape();{
+     vertex(-th/2, -r/2);
+     vertex(+th/2, -r/2 +skew);
+     vertex(+th/2, r/2 +skew);
+     vertex(-th/2, r/2);
+   }
+   endShape(CLOSE);
+
+
+  popMatrix();
+  popStyle();
+}
+
+/**
+renders 1/12 sector of a hexagon
+**/
+void drawSectorHalf(int k, int[] digits, color[] bits_pal){
+  float rd =  R/15;  
+  
+  noStroke();
+
+  int pal_offset=digits[ 4 ];
+  
+  
+  int n=0;
+  noStroke();
+  for (int row=0; row<30; row++){
+    for (int j=row/2; j<row; j++){
+      if(n<digits.length){
+        
+        int ci = digits [n]; //digit corresponds to color and rotation 
+
+        // if(n<150)
+        //   angle_add=ci * PI/3 ; 
+        // if(j==row-1)
+        //   angle_add=0;
+                  
+        pushMatrix();
+        {
+
+          // following the grid
+          float x = rd +  j*rd   -   rd * (row % 2)*0.5   -   rd * (int)(row/2);
           float y = hex_aspect * (row*rd);
-          float angle_add=0;
-           
-          if(n<150)
-            angle_add=ci * PI/3 ; 
-          if(j==row-1)
-            angle_add=0;
+          translate(x, y);                    
+          drawPixel(rd, ci, bits_pal, false);          
           
-          
-          pushMatrix();{
-            translate(x, y);
-            rotate(angle_add-PI/6);
-            
-           
-            //TODO: either make it complex shape, or replace with just a line
-            beginShape();
-            vertex(-th/2, -rd/2);
-            vertex(th/2, -rd/2 +skew);
-            vertex(th/2, rd/2 +skew);
-            vertex(-th/2, rd/2);
-            endShape(CLOSE);
-            
-          }
-          popMatrix();
-                    
         }
-        n++;
+        popMatrix();
+                  
       }
-    
+      n++;
     }
-    println(n);
+  
+  }
+  println(n);
 }
 
 void drawSector(int k, int[] digits){
@@ -144,5 +183,7 @@ void drawSector(int k, int[] digits){
 
 void mouseReleased() {   
   println(frameCount+" ");
+  saveFrame("/Users/artem/work/creative/snowflakes/sample_images/snow__####.png");
+  
   noLoop();
 }
