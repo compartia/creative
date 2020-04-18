@@ -1,29 +1,10 @@
 PFont mono;
 float font_size = 13;
-
+boolean RENDER_TO_DISK = false;
 int framesToSave = 30 * 30;
  
-static String txt1 = "Небо - портьера с бахромой медузы\n"+
-"Осадков жгучие щупальца жалкие\n"+
-"сдавливают череп, в котором тряпка.\n"+
-"Выжать на белое остатки влаги.\n"+
-"Направление потеряно,\n"+
-"минутная с часовой как флюгеры спутаны,\n"+
-"петухи горланят и куры,\n"+
-"клюют Прометея время жареные Икары,\n"+ 
-"это не утро, скорее сумерки.\n"+
-"\n"+
-"Буря, я отбываю в будущее,\n"+
-"целуй меня правильно,\n"+
-"с языком молнии, мокро,\n"+
-"с ливнем.\n"+
-"По глазу читай желание,\n"+
-"пиши по губам ядом.\n"+
-"Потные тучи, я рядом,\n"+
-"почти вплотную. Дождь\n"+
-"нитевидный и пульс. Разряд!\n"+
-"Мы его теряем";
-
+ 
+static float c = 1.; //speed of light = 1, for normalization
 
 String txt="Темнокожие комми-\n"+
 "вояжеры мысленные\n"+
@@ -90,18 +71,17 @@ void draw(){
     fill(255);
     float velocity = (1 + sin(6*sin(anim * 0.5))) * 0.09;
     renderText(endSpeed - velocity);
-    
-   
 
 
-
-    if (frameCount < framesToSave) {
-        println(frameCount + " ");
-        saveFrame("/Users/artem/work/creative-code/opart_19_poem/opart__####.tif");
-    } else {
-        noLoop();
+    if(RENDER_TO_DISK){
+       if (frameCount < framesToSave) {
+          println(frameCount + " ");
+          saveFrame("/Users/artem/work/creative-code/opart_19_poem/opart__####.tif");
+      } else {
+          noLoop();
+      }
     }
-
+   
 }
 
  
@@ -170,7 +150,7 @@ void renderText(float speed){
 
 
 
-static float c = 1.; //speed of light = 1, for normalization
+
 
 PVector lorentz(float space, float time, float v){
     float gammaLorentzFactor = 1 / sqrt(1 - v * v / c * c);
@@ -188,9 +168,7 @@ PVector lorentz(float space, float time, float v){
 
 
 void drawSpace(float xx, float time0, float rad, float speed){
-
-    float as=abs(speed);
-    int alph = 255 - (int)(as * 255);
+     
     beginShape();
     {
         // velocity relative to speed of light
@@ -230,5 +208,5 @@ void drawShape(PShape shape, float xx, float yy, float speed){
 
 void mouseReleased() {
     println(frameCount + " ");
-    saveFrame("/Users/artem/work/creative-code/opart_19_poem/opart__####.png");
+    saveFrame("/Users/artem/work/creative/opart_19_poem/sample__####.png");
 }
