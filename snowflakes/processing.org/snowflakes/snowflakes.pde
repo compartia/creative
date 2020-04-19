@@ -5,14 +5,11 @@ float R = 170;// size of flake
 
 boolean SHOW_LEGEND = false;
 boolean SHOW_DATA = false;
- 
-
 boolean SHOW_ORDER = false;
 boolean SHOW_FLAKE = true;
-
 boolean SHOW_GRID = false;
 
-boolean SAVE_TRAINSET=true;
+boolean SAVE_TRAINSET = true;
 
 float hex_aspect = sin(2.*PI/3);
 
@@ -48,6 +45,7 @@ void setup() {
   
   //noLoop();
   R = width/3.5;
+  testHashing();
 }
 
 

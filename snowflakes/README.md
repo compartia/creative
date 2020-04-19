@@ -27,7 +27,9 @@ graphical patterns might be recoverd with ~95% accuracy.
 
 ### Preliminary tresuts
 The resuts are very promising, but more work yet to be done. 
-For details, have a look at this Colab Notebook: [notebooks/snowcode_recogition.ipynb](notebooks/snowcode_recogition.ipynb)
+For details, have a look at this Colab Notebook:
+(https://colab.research.google.com/github/compartia/creative/blob/master/snowflakes/notebooks/snowcode_recogition.ipynb)  
+[github: notebooks/snowcode_recogition.ipynb](notebooks/snowcode_recogition.ipynb)
 
 ![Some results](training_results.png)
 
