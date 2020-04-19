@@ -16,7 +16,7 @@ void drawLegend(){
     pushMatrix();
     translate(r*d+r/2, 0);
      
-    drawPixel(r*0.7, d, bits_pal, true);
+    drawPixel(r*0.7, d, bits_pal, true, 0,0);
     fill(128);
     text(""+d, 0, r);
     popMatrix();

@@ -2,7 +2,7 @@ void drawHex(float x, float y, float r) {
   beginShape();
   for(int i=0; i < 6; i++){
     float angle = i * 2 * PI / 6 ;
-    vertex(x + r * cos(angle), y + r * sin(angle) );
+    vertex(x + 1.05 * r * cos(angle), y + r * sin(angle) );
   }
   endShape(CLOSE);
 }
@@ -26,7 +26,7 @@ void save_trainset(Table table, String data, String encoded6){
   saveFrame(filename);
   println(filename);
 
-   
+ 
   
   TableRow newRow = table.addRow();
   newRow.setInt("id", imageNumber);

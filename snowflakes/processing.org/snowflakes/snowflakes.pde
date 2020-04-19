@@ -1,5 +1,11 @@
 
+
+
+
 int BASE=6; //encoding base; 2 for binary; 10 is max
+
+
+
 //@deprecated
 float R = 170;// size of flake
 
@@ -9,7 +15,7 @@ boolean SHOW_ORDER = false;
 boolean SHOW_FLAKE = true;
 boolean SHOW_GRID = false;
 
-boolean SAVE_TRAINSET = true;
+boolean SAVE_TRAINSET = false;
 
 float hex_aspect = sin(2.*PI/3);
 
@@ -29,19 +35,25 @@ color[] bits_pal = {
   pal[0], //1
   pal[1], //2
   pal[4], //3
-  pal[3], //4
+  //pal[3], //4
   pal[2]  //5
 };
 
 
 
 void setup() {
-  size(512, 512);
-  //size(1080, 1080);
+  //size(512, 512);
+  size(1080, 1080);
   background(0);
-  frameRate(30);
+  frameRate(1);
   smooth(4);
-  pixelDensity(1);  
+  
+  pixelDensity(2);
+  if (SAVE_TRAINSET)
+    pixelDensity(1);
+    
+  //if (!SAVE_TRAINSET)
+    
   
   //noLoop();
   R = width/3.5;
@@ -107,7 +119,7 @@ void drawFlake(String nm){
   }
  
  
-  for (int k=0; k<6; k+=1){
+  for (int k=0; k < 6; k+=1){
     pushMatrix();
     rotate(  k*PI/3);
     {
@@ -122,41 +134,84 @@ void drawFlake(String nm){
 }
 
 
-
-void drawPixel(float r, int value, color[] bits_pal, boolean add_hex){
+/**
+-=-----------MAIN g ENCODING methog
+*/
+void drawPixel(float r, int value, color[] bits_pal, boolean add_hex, int i, int j){
+  
+  //if(i != j) return;
+  
   pushStyle();
   pushMatrix();
   
-
-  float skew = 0;
-  float th = r * 0.38;
-  
+   
+  float th = r * 0.5; 
   float angle  = PI/2 + value * PI/3  ; 
   
-  rotate(angle );
-
+  
+  if (j == i-1){
+    angle=0;
+  }
+  rotate(angle);
 
   if(add_hex){
     stroke(255, 50);
     noFill();
-    drawHex(0,0, 0.5*r/hex_aspect);
+    drawHex(0, 0, 0.5*r/hex_aspect);
   }
 
-
+  //pixel color index
+  int color_index = value % bits_pal.length;
+  
+  //if (i*j < 33){
+  //  //take next color
+  //  int fill_color_index = 1;
+  //  if (fill_color_index==color_index)
+  //    fill_color_index = (color_index+1) % bits_pal.length;
+      
+  //  fill( bits_pal[ fill_color_index] );
+  //  noStroke();
+  //  drawHex(0, 0, 0.5*r/hex_aspect);
+  //}
+  
+  
+ //   /  \
+ //   |  |
+  //stroke( bits_pal[  color_index ] );
+  //strokeCap(SQUARE);
+  //strokeWeight(th/2.0);
+  
   noStroke();
-  fill( bits_pal[  (value) % bits_pal.length  ] );
-   beginShape();{
-     //TODO: either make it complex shape, or replace with just a line
-     vertex(-th/2, -r/2);
-     vertex(+th/2, -r/2 +skew);
-     vertex(+th/2, r/2 +skew);
-     vertex(-th/2, r/2);
-   }
-   endShape(CLOSE);
+  fill(bits_pal[  color_index ]);
+   
+  //line(-th,0,0,0);
+  rotate(-PI/2);
+  drawSegment(r);
+  rotate(PI/3);
+  scale(-1,1);
+  //line(0, 0, th, 0);
+  drawSegment(r);
+  
+   
 
 
   popMatrix();
   popStyle();
+}
+
+ 
+void drawSegment(float d){
+  float r=d/2;
+  float th = r/2.0;
+  float s = -0.25*th/hex_aspect;
+  beginShape();{
+     //TODO: either make it complex shape, or replace with just a line
+   vertex(0-s, -th/2);
+   vertex(r, -th/2 );
+   vertex(r, th/2);
+    vertex(0+s, th/2);
+  }
+   endShape(CLOSE);
 }
 
 /**
@@ -166,41 +221,36 @@ void drawSectorHalf( int[] digits, color[] bits_pal){
   float rd =  R/15;  
   
   noStroke();
-
-  int pal_offset=digits[ 4 ];
-  
+    
   int n=0;
   noStroke();
+  
   for (int row=0; row<30; row++){
-    for (int j=row/2; j<row; j++){
+    for (int j = row/2; j<row; j++){
       if(n<digits.length){
         
         int ci = digits [n]; //digit corresponds to color and rotation 
 
-        // if(n<150)
-        //   angle_add=ci * PI/3 ; 
-        // if(j==row-1)
-        //   angle_add=0;
-                  
-        pushMatrix();
-        {
+        float angle = 0;
+        //if(n < digits.length/2)
+        //  angle = PI/3 ;
+          
+   
+        pushMatrix(); {
 
           // following the grid
           float x = rd +  j*rd   -   rd * (row % 2)*0.5   -   rd * (int)(row/2);
           float y = hex_aspect * (row*rd);
           translate(x, y);
+          rotate(angle);
           
           if (SHOW_ORDER){
             fill(255, 100);
             textSize(8);
-
             text(""+n, 0,0);
-          }else{
-            drawPixel(rd, ci, bits_pal, false);
-          }
-          
-                    
-          
+          } else {
+            drawPixel(rd, ci, bits_pal, false, row, j-row/2);
+          }                                        
         }
         popMatrix();
                   
