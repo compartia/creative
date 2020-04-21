@@ -1,3 +1,11 @@
+<!-- meh -->
+<script src='https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.2/paper-full.min.js'></script>
+<script>
+document.getElementById("snowcode").innerHTML = "XXX: Text added by JavaScript code";
+</script>
+
+
+
 # Snowcode
 
 The aim of this project is to build an aesthetically attractive graphical data coding system similar in a way to QR-codes.
