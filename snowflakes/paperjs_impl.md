@@ -1,10 +1,12 @@
 <!-- meh -->
 <script src='https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.2/paper-full.min.js'></script>
 
+# paper.js encoding implementation
+
 <canvas id="myCanvas" width="600" height="600" resize></canvas>
 
  
-# paper.js encoding implementation
+
 
 <script type="text/javascript">
 window.onload = function() {
