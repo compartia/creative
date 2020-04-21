@@ -7,7 +7,7 @@ The aim of this project is to build an aesthetically attractive graphical data c
 
 
 
-## Idea
+## Encoding, the idea
 
 Data is converted to hexadecimal representation, so we have 6 digits. 
 Graphically, a digit is encoded in one of 6 colors and / or as a combination of 3 different rotations X two colors.
@@ -19,7 +19,7 @@ The triangular segment of the hexagonal grid was selected as the structure for p
 Triangles (or sectors) are organized by rotation and reflection into a hexagonal structure, similar to a snowflake.
 Thus, the data is duplicated 12 times. This level of redundancy minimizes the error rate of a recognition system.
  
-## Recognision
+## Decoding, or recognition
 
 We've created the Tensoflow / Keras ML model on top of EfficientNet to test the theoretical possibility of data recovery using a neural network (POC).
 
@@ -44,7 +44,7 @@ For details, have a look at this Colab Notebook:
 
 ![Some results](training_results.png)
 
-## More samples
+# Appendinx 1: More samples
 
 ![Sample](sample3.png)
 
