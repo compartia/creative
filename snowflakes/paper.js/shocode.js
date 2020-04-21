@@ -38,7 +38,14 @@ function drawPixel(r, value, bits_pal) {
     path.closed = true;
 
     var hex = drawHex(0, 0, r / hex_aspect / 2);
-    hex.fillColor = bits_pal[(value) % bits_pal.length];
+    hex.fillColor = path.fillColor = {
+        gradient: {
+            stops: [bits_pal[(value + 1) % bits_pal.length], 
+            bits_pal[(value) % bits_pal.length]]
+        },
+        origin: [0, -r / 2],
+        destination: [0, r / 2]
+    }
     path.fillColor = bits_pal[(value + 1) % bits_pal.length];
 
 
