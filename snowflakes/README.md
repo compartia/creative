@@ -21,19 +21,30 @@ Thus, the data is duplicated 12 times. This level of redundancy minimizes the er
  
 ## Recognision
 
-We've built Tensoflow/Keras ML model on top of EfficientNet to make sure the data could be reconstruted by Neural Network.
-So far, the data encoded in these pretty low-res (256x256) augmented 
-graphical patterns might be recoverd with ~95% accuracy. 
+We've created the Tensoflow / Keras ML model on top of EfficientNet to test the theoretical possibility of data recovery using a neural network (POC).
 
-### Preliminary tresuts
-The resuts are very promising, but more work yet to be done. 
+We've trained the POC model on artificially heavily damaged images in a rather low resolution of 256 x 256 pixels.
+
+- Samples of deteriorated images
+![augmentation](augmentation.png)
+
+### Preliminary results
+The results are very promising.
+It is almost obvious that a deeply trained network is able to cope with the task with very high accuracy (there is 17M parameters in POC model).
+
+However, intuition suggests that the number of layers and parameters can be very greatly reduced. There is still work to be done.
+
 For details, have a look at this Colab Notebook:
-(https://colab.research.google.com/github/compartia/creative/blob/master/snowflakes/notebooks/snowcode_recogition.ipynb)  
+(Https://colab.research.google.com/github/compartia/creative/blob/master/snowflakes/notebooks/snowcode_recogition.ipynb)
 [github: notebooks/snowcode_recogition.ipynb](notebooks/snowcode_recogition.ipynb)
+ 
+ 
+  
+
 
 ![Some results](training_results.png)
 
-## More sampes
+## More samples
 
 ![Sample](sample3.png)
 
