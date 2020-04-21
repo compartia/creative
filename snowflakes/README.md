@@ -1,4 +1,3 @@
-
 # Snowcode
 
 The aim of this project is to build an aesthetically attractive graphical data coding system similar in a way to QR-codes.
@@ -10,14 +9,14 @@ The aim of this project is to build an aesthetically attractive graphical data c
 ## Encoding, the idea
 
 Data is converted to hexadecimal representation, so we have 6 digits. 
-Graphically, a digit is encoded in one of 6 colors and / or as a combination of 3 different rotations X two colors.
+Graphically, a digit is encoded in one of 6 colours and / or as a combination of 3 different rotations X two colors.
 
 ![Legend](order.png)
 
 The triangular segment of the hexagonal grid was selected as the structure for placing the digits.
 
-Triangles (or sectors) are organized by rotation and reflection into a hexagonal structure, similar to a snowflake.
-Thus, the data is duplicated 12 times. This level of redundancy minimizes the error rate of a recognition system.
+Triangles (or sectors) are organised by rotation and reflection into a hexagonal structure, similar to a snowflake.
+Thus, the data is duplicated 12 times. This level of redundancy minimises the error rate of a recognition system.
  
 ## Decoding, or recognition
 
@@ -44,7 +43,7 @@ For details, have a look at this Colab Notebook:
 
 ![Some results](training_results.png)
 
-# Appendinx 1: More samples
+# Appendix 1: More samples
 
 ![Sample](sample3.png)
 
