@@ -12,7 +12,7 @@ Made with processing.org etc.
 
 ![Sample](prizms/pink_floyd__0034.png)
 
-See it animated: (https://www.instagram.com/p/B7VBaqdFolx/?utm_source=github)
+See it animated: [https://www.instagram.com/p/B7VBaqdFolx](https://www.instagram.com/p/B7VBaqdFolx/?utm_source=github)
 
  
 ### Texts 
@@ -20,4 +20,4 @@ See it animated: (https://www.instagram.com/p/B7VBaqdFolx/?utm_source=github)
 
 ![Sample](opart_19_poem/sample__0023.png)
 
-See it animated: (https://www.instagram.com/p/B7Q5uzdFQTb/?utm_source=github)
+See it animated: [https://www.instagram.com/p/B7Q5uzdFQTb](https://www.instagram.com/p/B7Q5uzdFQTb/?utm_source=github)
