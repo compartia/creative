@@ -1,10 +1,22 @@
 <!-- meh -->
 <script src='https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.2/paper-full.min.js'></script>
-<script>
-document.getElementById("snowcode").innerHTML = "XXX: Text added by JavaScript code";
+
+<canvas id="myCanvas" resize></canvas>
+
+<script type="text/javascript">
+window.onload = function() {
+	paper.setup('myCanvas');
+	with (paper) {
+		var path = new Path();
+		path.strokeColor = 'black';
+		var start = new Point(100, 100);
+		path.moveTo(start);
+		path.lineTo(start.add([ 200, -50 ]));
+		view.draw();
+	}
+}
+ }
 </script>
-
-
 
 # Snowcode
 
