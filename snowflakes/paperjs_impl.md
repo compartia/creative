@@ -1,7 +1,7 @@
 <!-- meh -->
 <script src='https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.2/paper-full.min.js'></script>
 
-<canvas id="myCanvas" resize></canvas>
+<canvas id="myCanvas" width="600" height="600" resize></canvas>
 
  
 # paper.js encoding implementation
@@ -15,7 +15,7 @@ window.onload = function() {
 const LEGEND = 1;
 const hex_aspect = Math.sin(2.0 * Math.PI / 3.0);
 
-const R = 400;
+const R = 300;
 const rd = R / 15.0;
 
 
