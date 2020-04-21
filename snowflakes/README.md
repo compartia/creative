@@ -21,7 +21,7 @@ Triangles (or sectors) are organised by rotation and reflection into a hexagonal
 Thus, the data is duplicated 12 times. This level of redundancy minimises the error rate of a recognition system.
 
 ### .js implementation 
-Please find .js implementation here: [paperjs_impl](paperjs_impl)  
+Please find .js implementation here: [paperjs_impl](https://compartia.github.io/creative/snowflakes/paperjs_impl)  
 
 made with [paper.js](http://paperjs.org/)
 
