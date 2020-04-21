@@ -1,5 +1,5 @@
 
-# Rendom exaplles of procedural art
+# Random examples of procedural art
 Made with processing.org etc.
 
 ### Snowcode [More...](/snowflakes/README.md)
