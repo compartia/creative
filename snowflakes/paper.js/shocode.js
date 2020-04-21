@@ -1,11 +1,17 @@
 
 const BASE = 6;
-const LEGEND = 0;
+const LEGEND = 1;
 const hex_aspect = Math.sin(2.0 * Math.PI / 3.0);
+
+const R = 400;
+const rd = R / 15.0;
+
+
 function color(r, g, b) {
     return new Color(r / 255.0, g / 255.0, b / 255.0);
 }
 const pal = [
+    'rgba(0,0,0)',
     color(193, 24, 39),
     color(255, 227, 0),
     color(31, 75, 149),
@@ -17,11 +23,12 @@ const pal = [
 
 
 function drawPixel(r, value, bits_pal) {
-
+    // r/=hex_aspect;
     var th = r * 0.35;
-    var angle_deg = 60 + value * 60;
+    var angle_deg = 30 + value * 60;
 
-    const skew = 0.5 * th / hex_aspect;
+    var sign = value == 3 || value == 4 ? 1 : -1;
+    const skew = 0;//0.5*th/hex_aspect;// * sign;
 
     var path = new Path();
     path.add(new Point(-th / 2, -r / 2));
@@ -29,25 +36,15 @@ function drawPixel(r, value, bits_pal) {
     path.add(new Point(th / 2, r / 2 + skew));
     path.add(new Point(-th / 2, r / 2));
     path.closed = true;
-    path.fillColor = {
-        gradient: {
-            stops: [bits_pal[(value + 1) % bits_pal.length], bits_pal[(value) % bits_pal.length]]
-        },
-        origin: [0, -r / 2],
-        destination: [0, r / 2]
-    }
 
-    // bits_pal[(value) % bits_pal.length];
-    //   noStroke();
-    //   fill( bits_pal[  (value) % bits_pal.length  ] );
-
-    //   endShape(CLOSE);
+    var hex = drawHex(0, 0, r / hex_aspect / 2);
+    hex.fillColor = bits_pal[(value) % bits_pal.length];
+    path.fillColor = bits_pal[(value + 1) % bits_pal.length];
 
 
-    //   popMatrix();
-    //   popStyle();
-    path.rotate(angle_deg);
-    return path;
+    hex.rotate(angle_deg);
+    path.rotate(120 + angle_deg);
+    return new Group([hex, path]);//Group([path, hex]);
 }
 
 if (LEGEND) {
@@ -59,18 +56,19 @@ if (LEGEND) {
 }
 
 
-const _digits = [1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0]
-const R = 450;
+const _digits = [1, 2, 3, 4, 0, 1, 2, 3, 4, 5, 0, 0, 3, 1, 2, 0, 3, 4, 5, 0, 1, 2, 0, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0]
 
 function drawSectorHalf(digits, bits_pal) {
-    const rd = R / 15.0;
+
 
     var n = 0;
-    var group = new Group(new Path.Circle({
-        center: [0, 0],
-        radius: 2,
-        fillColor: 'red'
-    }));
+    var group = new Group(
+        //     new Path.Circle({
+        //     center: [0, 0],
+        //     radius: 2,
+        //     fillColor: 'red'
+        // })
+    );
 
     for (var row = 0; row < 30; row++) {
         for (var j = row / 2; j < row; j++) {
@@ -79,8 +77,8 @@ function drawSectorHalf(digits, bits_pal) {
                 const ci = digits[n]; //digit corresponds to color and rotation 
 
                 // following the grid
-                var x = rd + (j) * rd - rd * (row % 2) * 0.5 - rd * Math.ceil(row / 2);
-                var y = hex_aspect * ((row) * rd);
+                var x = rd + (j) * rd - rd * (row % 2) * 0.5 - Math.ceil(rd * row / 2);
+                var y = hex_aspect * ((row + 2) * rd);
 
 
                 pixel = drawPixel(rd, ci, bits_pal, false);
@@ -111,4 +109,16 @@ for (var i = 0; i < 12; i++) {
     instance.rotate(30 * i - 30 * (i % 2));
     instance.position = center;
 
+}
+
+
+function drawHex(x, y, d) {
+    var path = new Path();
+    for (var i = 0; i < 6; i++) {
+        var angle = i * Math.PI / 3.0;
+        _p = new Point(d * Math.cos(angle), d * Math.sin(angle));
+        path.add(_p);
+    }
+    path.closed = true;
+    return path;
 }
