@@ -1,13 +1,8 @@
-<!-- meh -->
-<script src='https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.2/paper-full.min.js'></script>
-
-<canvas id="myCanvas" resize></canvas>
-
-
-
+ 
 # Snowcode
 
-The aim of this project is to build an aesthetically attractive graphical data coding system similar in a way to QR-codes.
+The aim of this project is to build an aesthetically attractive 
+graphical data coding system similar in a way to QR-codes.
 
 ![Grid](grid.png)
 
@@ -24,6 +19,16 @@ The triangular segment of the hexagonal grid was selected as the structure for p
 
 Triangles (or sectors) are organised by rotation and reflection into a hexagonal structure, similar to a snowflake.
 Thus, the data is duplicated 12 times. This level of redundancy minimises the error rate of a recognition system.
+
+### .js implementation 
+Please find .js implementation here: [paperjs_impl](paperjs_impl)  
+
+made with [paper.js](http://paperjs.org/)
+
+### .java implementation 
+[github.com/compartia/creative/tree/master/snowflakes/processing.org/](//github.com/compartia/creative/tree/master/snowflakes/processing.org/snowflakes)  
+
+Made with [processing.org](http://processing.org/)
  
 ## Decoding, or recognition
 
@@ -58,19 +63,4 @@ For details, have a look at this Colab Notebook:
 
 ![Sample](grid2.png)
 
-
-# Appendix 2: JS encoding implementation
-
-<script type="text/javascript">
-window.onload = function() {
-	paper.setup('myCanvas');
-	with (paper) {
-		var path = new Path();
-		path.strokeColor = 'black';
-		var start = new Point(100, 100);
-		path.moveTo(start);
-		path.lineTo(start.add([ 200, -50 ]));
-		view.draw();
-	}
-}
-</script>
+ 
