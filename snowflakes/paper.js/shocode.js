@@ -56,6 +56,7 @@ function drawSectorHalf(digits, bits_pal) {
     const rd = R / 15.0;
 
     var n = 0;
+    var group = new Group();
 
     for (var row = 0; row < 30; row++) {
         for (var j = row / 2; j < row; j++) {
@@ -69,13 +70,31 @@ function drawSectorHalf(digits, bits_pal) {
 
 
                 pixel = drawPixel(rd, ci, bits_pal, false);
-                pixel.position = new Point(x + 200, y + 200);
+                pixel.position = new Point(x, y);
+                group.addChild(pixel)
+
             }
             n++;
         }
 
     }
 
+
+    sector = new SymbolDefinition(group, true);
+
+    return sector;
+
 }
 
-drawSectorHalf(_digits, pal) 
+sector = drawSectorHalf(_digits, pal)
+center = view.size / 2;
+for (var i = 0; i < 12; i++) {
+    instance = sector.place();
+    if (i % 2 == 0) {
+        instance.scale(-1, 1)
+    }
+    instance.pivot = new Point(0, 0);
+    instance.rotate(30 * i - 30 * (i % 2));
+    instance.position = center;
+
+}
