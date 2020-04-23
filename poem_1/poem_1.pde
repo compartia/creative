@@ -43,12 +43,8 @@ String poem="На белой бумаге черная итальянская м
         "зомби - фигуры (и пунктуация), "+
         "белый слон уже ест афро-американского короля, "+
         "Но, верю я, в одной из вселенных возможна ничья. ";
-
 float ts = 25;
 
-float pos = 100;
-float speed = 1.0 / 200.0;
-String prep = poem.replaceAll("\n", " ").replaceAll("--", "—").replaceAll(" ", " ");
 PFont f;
 
 void setup() {
@@ -64,27 +60,40 @@ void setup() {
 
     textFont(f, ts);
     textSize(ts);
-
+    
 }
 
+float pos = 100;
+float speed = 1.0 / 230.0;
+String prep = poem.replaceAll("\n", " ").replaceAll("--", "—").replaceAll(" ", " ");
+
+int motionblur_steps = 20;
 
 void draw() {
-    pos = pos - (float) width * speed;
-    background(250);
+    pos += 0.5;
+    background(0);
     textSize(ts);
     translate(0, ts);
     rotate(radians(-3 - 0.9 * sin((float) frameCount / 50.0)));
 
-    fill(180, 0, 40, 255);
+    blendMode(ADD);
+
     noStroke();
 
-    for (float y = -ts * 3; y < height + ts * 5; y += ts * 1.5) {
-        float offset_x = y * 12 - (0.1 * width) * sin(4 * y / height);
+    fill(30, 2 + 256 / motionblur_steps);
 
-        float speed_v = 1.3 + sin(y / 2.2) * 0.2 + sin(y / 3) * 0.3;
+    for (int mb = 0; mb < motionblur_steps; mb++) {
+        int r = mb * 256 / motionblur_steps;
+        int b = 256 - r;
+        fill(r, b, b, 2 + 256 / motionblur_steps);
 
-        fill(30, 255);
-        text(prep, pos * speed_v - offset_x, y);
+        pos = pos - (float) width * speed / (float) motionblur_steps;
+
+        for (float y = -ts * 3; y < height + ts * 5; y += ts * 1.5) {
+            float offset_x = y * 12 - (0.1 * width) * sin(4 * y / height);
+            float speed_v = 1.3 + sin(y / 2.2) * 0.2 + sin(y / 3) * 0.3;
+            text(prep, pos * speed_v - offset_x, y);
+        }
     }
 
 }
