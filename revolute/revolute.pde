@@ -48,7 +48,7 @@ void draw() {
 
     String p = wordings;
 
-    color clr = color(255, 180);
+   
 
     float a_reve = (sin(frameCount / 5.0) + 2.0) * 64;
     color clr_reve = color(255, 180, 255, a_reve * 0.5);
@@ -63,13 +63,11 @@ void draw() {
     color clr_alt = color(255, a_alt);
 
     if (random(3) < 1) {
-        p = "f         naï";
-        clr = color(0, 255, 255, 180);
+        p = "f         naï";         
     }
 
     if (random(3) < 1) {
-        p = "    lutin    ";
-        clr = color(255, 0, 255, 180);
+        p = "    lutin    ";       
     }
 
     p = p.toUpperCase();
