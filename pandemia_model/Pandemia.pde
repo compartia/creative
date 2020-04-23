@@ -103,15 +103,7 @@ public class Pandemia{
   }
   
   void moveToAttractors(Unit u){
-    //for (PVector a : this.tokens){
-    //  PVector d = PVector.sub(a, u.pos);
-    //  //float distance = d.mag();
-                   
-    //  d.mult( (10. / (0.001+d.magSq())) - 0.0002 );
-    //  //d.mult(0.6/d.magSq());
-    //  u.v.add(d);                
-    //}
-    
+ 
     
     for (PVector a : this.tokens){
       PVector d = PVector.sub(a , u.pos);
@@ -119,11 +111,9 @@ public class Pandemia{
       
       if(distanceSq<50*50 && distanceSq>10*10){
                    
-        d.mult( (0.5 / ( distanceSq))   );
-        //d.mult(0.6/d.magSq());
+        d.mult( (0.5 / ( distanceSq))   );      
         u.v.add(d);     
-        //return;
-    
+           
       }
     }
     
@@ -160,13 +150,6 @@ public class Pandemia{
     fitUnits();
     
     popStyle();
-    
-    //noStroke();
-    //fill(255,0,0, 70);
-    //for (PVector a : this.tokens){
-    //  ellipse(a.x, a.y, 8,8);
-    //}
-   
  
   }
 
