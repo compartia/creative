@@ -1,6 +1,6 @@
 
 # Random examples of procedural art
-Made with processing.org etc.
+Made with [processing.org](https://processing.org) etc.
 
 ### Snowcode [More...](/snowflakes/README.md)
 
