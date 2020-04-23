@@ -1,6 +1,5 @@
 color c1=color(0);
 color c2=color(255, 200, 54, 8);
-//color c2=color(218, 255, 54, 8);
 color c3=color(3, 217, 255, 8);
 color c4=color(3, 80, 255, 8);
 
@@ -9,7 +8,7 @@ void setup() {
   size(1080, 1080);
   background(0);
   frameRate(30);
-  //smooth(0);
+  
   pixelDensity(2);   
   background(48, 44, 56);
 
@@ -29,7 +28,6 @@ float dots=2000;
 void drawCircleBlured(PGraphics g){
    g.noFill();
    g.stroke(c2);
-   //g.line(0,0,100,100);
    
   
   for (float t=0; t<2*PI; t+=2*PI/dots){
@@ -52,7 +50,7 @@ void drawCircleBlured(PGraphics g){
 void mouseReleased() {
   noLoop();
   println(frameCount+" ");
-  saveFrame("/Users/artem/work/creative-code/modern_1_gaussian_circle/gauss__####.png");
+  saveFrame("gauss__####.png");
 }
  
 
