@@ -1,7 +1,7 @@
 color bg = color(0);
 color c1 = color(255, 200, 54, 50);
 color c2 = color(3, 217, 255, 200);
-color c3 = color(3, 80, 255, 8);
+color c3 = color(3, 180, 255, 208);
 
 
 ArrayList<PVector> datapoints;

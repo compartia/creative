@@ -15,20 +15,22 @@ class Node{
     if(this != o && o!=null){
        PVector dir = PVector.sub(pos, o.pos);
        float r2 = dir.magSq();
-       dir.setMag(magnitude);
-       dir.mult( 1.0 / (r2+eps) );
-       v.add(dir);
-       //print(v.mag());
-       o.v.sub(dir);
+       if (r2>eps*2){
+         dir.setMag(magnitude);
+         dir.mult( 1.0 / (r2+eps) );
+         v.add(dir);
+         //print(v.mag());
+         o.v.sub(dir);
+       }
      }
   }
   
   void move(){
-    if ( v.mag()>4){
-      v.setMag(4);
-    }
+    //if ( v.mag()>41){
+    //  v.setMag(41);
+    //}
     pos.add(v);
-    v.mult(0.5);
+    v.mult(0.75);
   }
   
   void interact_inverse(Node o, float magnitude){
@@ -36,9 +38,9 @@ class Node{
        PVector dir = PVector.sub(pos, o.pos);
   
        dir.mult( magnitude );
-       v.add(dir);
-       //print(v.mag());
-       o.v.sub(dir);
+       if(dir.mag() > eps*2)
+         v.add(dir);       
+         o.v.sub(dir);
      }
   }
 }
@@ -52,13 +54,14 @@ class Hull{
   
   
   void move(ArrayList<PVector> dataset){
-    float nn_repuslion = 110.*width/(float)hull.size();
-    float nn_att =  -0.001 * width/(float)hull.size();
+    float nn_att =   -2.0 / (float)hull.size();
+    float nn_repuslion =   2.0/ hull.size() * hull.size();
+    
     
     //println("nn_repuslion", nn_repuslion);
     //float eps=0.0001;
     //float size = dataset.size();
-    float att_magnitude =-100.0 * width * (float)hull.size() / (float)dataset.size();
+    float att_magnitude = -0.1 * (float)width * (float)hull.size() / (float)dataset.size();
     
  
     for (Node n: hull){
@@ -75,10 +78,12 @@ class Hull{
     
     for (Node n: hull){
       for (PVector p: dataset){
-        PVector v1 = PVector.sub(n.pos, p);
-         float mgq = v1.magSq();
-         v1.setMag(att_magnitude).div(0.001+mgq);
-         n.v.add(v1 );
+         PVector v1 = PVector.sub(n.pos, p);
+         float r2 = v1.magSq();
+         if (r2>width/1000.){
+           v1.setMag(att_magnitude).div(eps+r2);
+           n.v.add(v1 );
+         }
       }
     }
     
@@ -97,9 +102,10 @@ class Hull{
     int r = 6;
     
     stroke(c3);
+    noFill();
     for (Node n: hull){
-      PVector p = n.pos;
-      ellipse(p.x, p.y, r, r);
+      if(n.left!=null)
+        line(n.left.pos.x, n.left.pos.y, n.pos.x, n.pos.y);
     }
     
     noStroke();
@@ -121,7 +127,7 @@ class Hull{
 ArrayList<Node> make_hull_2d(ArrayList<PVector> dataset ){
     //TODO: find radius
     float r = width/3.0;
-    float n =  (3 + sqrt( dataset.size()));
+    float n =  (3 + sqrt( dataset.size())) ;
     ArrayList<Node> nodes = new ArrayList();
         
     Node  node=new Node();
@@ -129,6 +135,7 @@ ArrayList<Node> make_hull_2d(ArrayList<PVector> dataset ){
     for (int i = 1; i < n; i++ ){
       node= new Node();
       nodes.add(node);      
+      //if (random(1)<0.1)
       node.setLeft (nodes.get(i-1));
     }
     nodes.get(0).setLeft (node);
@@ -137,7 +144,7 @@ ArrayList<Node> make_hull_2d(ArrayList<PVector> dataset ){
     float an = 2.0 * PI / n;
     for (int i = 0; i < n; i++ ){
       nodes.get(i).pos = new PVector( r * sin(i*an) , r * cos(i*an));
-      nodes.get(i).pos.z=3*randomGaussian();
+      nodes.get(i).pos.z= randomGaussian();
     }
     return nodes;
 }
