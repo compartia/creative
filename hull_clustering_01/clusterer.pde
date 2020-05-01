@@ -58,11 +58,7 @@ class Hull{
     float nn_repuslion =  0.001*10.* 4.0 /   hull.size();
     
     
-    //println("nn_repuslion", nn_repuslion);
-    //float eps=0.0001;
-    //float size = dataset.size();
-    float att_magnitude = -10;//-0.1 * (float)width * (float)hull.size() / (float)dataset.size();
-    
+  
  
     for (Node n: hull){
       for (Node p: hull){
@@ -84,15 +80,13 @@ class Hull{
          d=d.div(4*dataset.size());
          
          d.div(0.0001*r2);
-         n.v.sub(d );
+         n.v.sub(d);
          
       }
     }
     
-    for (Node n: hull){
-      
-      n.move();
-       
+    for (Node n: hull){      
+      n.move();       
     }
     
    
@@ -130,7 +124,7 @@ class Hull{
 ArrayList<Node> make_hull_2d(ArrayList<PVector> dataset ){
     //TODO: find radius
     float r = width/4.0;
-    float n =  150;//2*(3 + sqrt( dataset.size())) ;
+    float n =   (3 + sqrt( dataset.size())) ;
     ArrayList<Node> nodes = new ArrayList();
         
     Node  node=new Node();

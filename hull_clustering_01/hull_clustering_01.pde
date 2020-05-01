@@ -15,7 +15,7 @@ void setup() {
   pixelDensity(1);   
   background(bg);
   
-  datapoints = make_bubbles(50);
+  datapoints = make_bubbles(20);
 
   hull = new Hull(datapoints);
   
