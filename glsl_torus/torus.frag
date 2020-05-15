@@ -25,6 +25,12 @@ float opSubtraction( float d1, float d2 ) {
     return max(-d1,d2); 
 }
 
+// tonemapping from https://www.shadertoy.com/view/lslGzl
+vec3 filmicToneMapping( vec3 col ) {
+    col = max(vec3(0.), col - vec3(0.004));
+    return (col * (6.2 * col + .5)) / (col * (6.2 * col + 1.7) + 0.06);
+}
+
 float opUnion( float d1, float d2 ) {  
     return min(d1,d2); 
 }
@@ -75,12 +81,7 @@ float displacement(vec3 p){
     return 0.001*sin(DF*p.x)*sin(DF*p.y)*sin(DF*p.z);
 }
 
-// float opDisplace( ifloat d, in vec3 p )
-// {
-//     float d1 = primitive(p);
-//     float d2 = displacement(p);
-//     return d1+d2;
-// }
+ 
 
 float opSmoothSubtraction( float d1, float d2, float k ) {
     float h = clamp( 0.5 - 0.5*(d2+d1)/k, 0.0, 1.0 );
@@ -172,18 +173,6 @@ float circleshape(vec2 position, float radius){
 
 
 
-
-
-
-// vec3 grad(vec3 p, float b) {
-// 	vec2 q = vec2(0.0, EPS);
-// 	return vec3(mobius(p+q.yxx, b) - mobius(p-q.yxx, b), 
-// 			    mobius(p+q.xyx, b) - mobius(p-q.xyx, b),
-// 			    mobius(p+q.xxy, b) - mobius(p-q.xxy, b));
-// }
-
-
-
 mat3 rotY(float ang) {
 	float c = cos(ang), s = sin(ang);
 	return mat3(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
@@ -194,41 +183,14 @@ mat3 rotX(float ang) {
 	return mat3(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
 }
 
-// vec3 shade(vec3 p, vec3 rd, float b, mat3 m) {
-// 	vec3 col = vec3(0.0);
-// 	vec3 n = normalize(-grad(p, b));
-	
-// 	// material
-// 	vec3  amb = vec3(0.05375, 0.05, 0.06625);
-// 	vec3  dif = vec3(0.18275, 0.17, 0.22525);
-// 	vec3  spe = vec3(0.332741, 0.328634, 0.346435);
-// 	float shin = 39.4;
-	
-// 	// key light
-// 	vec3 l = normalize(m*vec3(1.0));
-// 	vec3 h = normalize(l-rd);
-// 	float lambert = max(0.0, dot(n, l));
-// 	float blinn = lambert > 0.0 ? pow(max(0.0, dot(n, h)), shin) : 0.0;
-// 	col += vec3(3.0, 2.0, 3.0)*(0.4*dif*lambert + 1.4*spe*blinn + 0.1*amb);
-	
-// 	// fill light
-// 	lambert = max(0.0, dot(n, -rd));
-// 	blinn = lambert > 0.0 ? pow(lambert, shin) : 0.0;
-// 	col += vec3(1.0)*(0.4*dif*lambert + 1.4*spe*blinn + 0.1*amb);
-	
-// 	// rim light
-// 	// col += 2.25*pow(clamp(1.0+dot(n, rd), 0.0, 1.0), 3.0); 
-//     col += 2.25*pow(clamp(1.0+dot(n, rd), 0.0, 1.0), 3.0); 
-	
-// 	return col/(col+1.0); // reinhard
-// }
+ 
 
-float animCurve(in float t) {
-	t = mod(u_time, 15.0);
-	float f1 = smoothstep(5.0, 7.0, t);
-	float f2 = 1.0-smoothstep(7.0, 9.0, t);
-	return 0.01+0.09*f1*f2;
-}
+// float animCurve(in float t) {
+// 	t = mod(u_time, 15.0);
+// 	float f1 = smoothstep(5.0, 7.0, t);
+// 	float f2 = 1.0-smoothstep(7.0, 9.0, t);
+// 	return 0.01+0.09*f1*f2;
+// }
 
 
 
@@ -249,12 +211,8 @@ float trace(vec3 ro, vec3 rd){
     return t;
 }
 
-vec3 getObjectColor(vec3 p){
-   
-    // return torus(p)
-    // float timek = (0.6 + 0.5 * sin (u_time*5.));
-    return vec3(0.3, 2.7*torus( sin(p*2.)),  1.0 ) ;
-    
+vec3 getObjectColor(vec3 p){   
+    return vec3( cos(p.z*13.) + 1.0,  1.3 * torus( sin( p * 3.)),  sin(p.z*12.) + 1.0 );    
 }
 
 vec3  doColor(in vec3 sp, in vec3 rd, in vec3 sn, in vec3 lp, float t){
@@ -280,7 +238,7 @@ vec3  doColor(in vec3 sp, in vec3 rd, in vec3 sn, in vec3 lp, float t){
     
     
     // Fog factor -- based on the distance from the camera.
-    float fogF = smoothstep(0., .95, t/FAR);
+    float fogF = smoothstep(0., 0.95, t/FAR);
     //
     // Applying the background fog. Just black, in this case, but you could
     // render sky, etc, as well.
@@ -300,11 +258,11 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 	
 	vec2 mouse = 0.5*TAU*(-1.0+2.0*u_mouse.xy/u_resolution.xy);
 	
-	#ifndef HOMOTOPY
-		float b = 0.015;
-	#else
-		float b = animCurve(u_time);
-	#endif
+	// #ifndef HOMOTOPY
+	// 	float b = 0.015;
+	// #else
+	// 	float b = animCurve(u_time);
+	// #endif
 	
 	#ifdef ROTATION
 		mouse.x += 0.3*u_time;
@@ -343,7 +301,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     // See "traceRef" below.
     vec3 sceneColor = doColor(ro, rd, sn, lp, t);
 
-    float sh = softShadow(ro +  sn*.0015, lp, 16.);
+    float sh = 0.;//softShadow(ro +  sn*.0015, lp, 16.);
 
     // SECOND PASS - REFLECTED RAY
     
@@ -371,13 +329,14 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
     // Coloring the reflected hit point, then adding a portion of it to the final scene color.
     // How much you add, and how you apply it is up to you, but I'm simply adding 35 percent.
-    sceneColor += doColor(ro, rd, sn, lp, t) * 0.35 + 0.1*sh;
+    sceneColor += doColor(ro, rd, sn, lp, t) * 0.35 + 0.1 * sh;
     // Other combinations... depending what you're trying to achieve.
     //sceneColor = sceneColor*.7 + doColor(ro, rd, sn, lp, t)*.5;
 
     // Clamping the scene color, performing some rough gamma correction (the "sqrt" bit), then 
     // presenting it to the screen.
-	fragColor = vec4(sqrt(clamp(sceneColor, 0., 1.)), 1);
+    sceneColor=filmicToneMapping(0.7*sceneColor);
+	fragColor =  vec4(clamp(sceneColor, 0., 1.), 1);
  
 }
 
