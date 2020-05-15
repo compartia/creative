@@ -4,10 +4,17 @@ precision mediump float;
 
 #define FAR 20.5
 #define EPS 0.01
-#define STEPS 50
+#define STEPS 150
 #define TAU 6.28318530718
 
 #define ROTATION
+
+// perimeter of the moebius strip is 38
+#define PI 3.14159265359
+// #define PER 2.
+#define RADIUS 1.// (1.0/(PI*2.0)*PER)
+
+
 // #define HOMOTOPY
 
 uniform vec2 u_resolution;
@@ -16,6 +23,10 @@ uniform float u_time;
 
 float opSubtraction( float d1, float d2 ) { 
     return max(-d1,d2); 
+}
+
+float opUnion( float d1, float d2 ) {  
+    return min(d1,d2); 
 }
 
 //trus distancefield
@@ -34,6 +45,37 @@ float torus(vec3 p) {
   	return length(q) - t.y;
 }
 
+
+// iq's functions
+float sdBox( in vec3 p, in vec3 b ) {
+	vec3 d = abs(p) - b;
+	return min(max(d.x,max(d.y,d.z)),0.0) + length(max(d,0.0));
+}
+
+// Fabrice's rotation matrix
+mat2 rot( in float a ) {
+    vec2 v = sin(vec2(PI*0.5, 0) + a);
+    return mat2(v, -v.y, v.x);
+}
+
+float mob(vec3 p){
+    
+
+    // cylindrical coordinates
+    vec2 cyl = vec2(length(p.xy), p.z);
+    float theta = atan(p.x, p.y);
+    vec2 inCyl = vec2(1., 0) - cyl;
+    // rotate 180° to form the loop
+    inCyl *= rot(theta * 1.5-2.0);
+    // coordinates in a torus (cylindrical coordinates + position on the stripe)
+    vec3 inTor = vec3(inCyl, theta * RADIUS);
+    
+    // add the band
+    float bandDist = sdBox(inTor, vec3(0.1, 0.5, 100)) - 0.0001;
+    float d = bandDist;
+
+    return d;
+}
 
 float mobius(vec3 p, float b) {
     
@@ -55,17 +97,20 @@ float mobius(vec3 p, float b) {
      
 }
 
-float sdLink( vec3 p, float le, float r1, float r2 )
-{
-  vec3 q = vec3( p.x, max(abs(p.y)-le,0.0), p.z );
-  return length(vec2(length(q.xy)-r1,q.z)) - r2;
+float opSmoothSubtraction( float d1, float d2, float k ) {
+    float h = clamp( 0.5 - 0.5*(d2+d1)/k, 0.0, 1.0 );
+    return mix( d2, -d1, h ) + k*h*(1.0-h); 
 }
+
 
 float map(vec3 p){
     // float link = sdLink(p, 1., 0.4, 0.2);
-    float tor = torus(  sin(p));
+    float tor = torus(p);
+    float mob = mob(p);
     // return mobius(p, 0.015);
-    return tor;//opSubtraction (tor, link);
+    // return tor;//opSubtraction (tor, link);
+     
+    return opSmoothSubtraction(mob, tor, 0.015  );//opSubtraction (  tor , mob) ;
 }
 
 // Second pass, which is the first, and only, reflected bounce. 
@@ -244,7 +289,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
     
     // Ray origin. 
-    vec3 ro = m * vec3(0.0, 0.0, 2.2);
+    vec3 ro = m * vec3(0.0, 0.0, 1.7);
 
     // Light position. Set in the vicinity the ray origin.
     vec3 lp = ro + vec3(0., 1., -.5);
