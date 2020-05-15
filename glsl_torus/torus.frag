@@ -2,7 +2,7 @@
 precision mediump float;
 #endif
 
-#define FAR 20.5
+#define FAR 13.5
 #define EPS 0.01
 #define STEPS 150
 #define TAU 6.28318530718
@@ -29,13 +29,7 @@ float opUnion( float d1, float d2 ) {
     return min(d1,d2); 
 }
 
-//trus distancefield
-float sdTorus( vec3 p, vec2 t )
-{
-  vec2 q = vec2(length(p.xz) - t.x, p.y);
-  return length(q) - t.y;
-}
-
+ 
 float torus(vec3 p) {
 	vec2 t = vec2(1.0, 0.3333);
     // return sdTorus(p, t);
@@ -60,7 +54,6 @@ mat2 rot( in float a ) {
 
 float mob(vec3 p){
     
-
     // cylindrical coordinates
     vec2 cyl = vec2(length(p.xy), p.z);
     float theta = atan(p.x, p.y);
@@ -77,25 +70,17 @@ float mob(vec3 p){
     return d;
 }
 
-float mobius(vec3 p, float b) {
-    
-    
-    float ROT = 3.0;
-	float x = p.x, y = p.y, z = p.z;
-	float xx = x*x, yy = y*y, zz = z*z, y3 = yy*y, x3 = xx*x;
-	float xy = xx+yy, b2 = b * 2.0;
-    
-    float zxy = z*(xx*y*ROT - y3);
-    float xyy = x*yy*ROT - x3;
-
-    // float C = 0.2;
-    float k1 = (2.0*zxy+xyy*(xy-zz+1.0))*(b-0.1) - xy * xy * ( b2 + 0.2 );
-    float k2 = b * xy * 0.2 + (b2-0.2) * (zxy+xyy) - xy* (b+0.1) * (xy+zz+1.0);
-	// return  min(-(k1*k1-xy*k2*k2) , -trus);
-
-    return   k1 * k1 + xy * k2 * k2;
-     
+#define DF 80.
+float displacement(vec3 p){
+    return 0.001*sin(DF*p.x)*sin(DF*p.y)*sin(DF*p.z);
 }
+
+// float opDisplace( ifloat d, in vec3 p )
+// {
+//     float d1 = primitive(p);
+//     float d2 = displacement(p);
+//     return d1+d2;
+// }
 
 float opSmoothSubtraction( float d1, float d2, float k ) {
     float h = clamp( 0.5 - 0.5*(d2+d1)/k, 0.0, 1.0 );
@@ -110,8 +95,48 @@ float map(vec3 p){
     // return mobius(p, 0.015);
     // return tor;//opSubtraction (tor, link);
      
-    return opSmoothSubtraction(mob, tor, 0.015  );//opSubtraction (  tor , mob) ;
+    float dis = 0.0;//displacement(p);
+    return dis + opSmoothSubtraction(mob, tor, 0.045  );//opSubtraction (  tor , mob) ;
 }
+
+
+// Cheap shadows are hard. In fact, I'd almost say, shadowing repeat objects - in a setting like this - with limited 
+// iterations is impossible... However, I'd be very grateful if someone could prove me wrong. :)
+float softShadow(vec3 ro, vec3 lp, float k){
+
+    // More would be nicer. More is always nicer, but not really affordable... Not on my slow test machine, anyway.
+    const int maxIterationsShad = 24; 
+    
+    vec3 rd = lp - ro; // Unnormalized direction ray.
+
+    float shade = 1.;
+    float dist = .002;    
+    float end = max(length(rd), .001);
+    float stepDist = end/float(maxIterationsShad);
+    
+    rd /= end;
+
+    // Max shadow iterations - More iterations make nicer shadows, but slow things down. Obviously, the lowest 
+    // number to give a decent shadow is the best one to choose. 
+    for (int i = 0; i<maxIterationsShad; i++){
+
+        float h = map(ro + rd*dist);
+        //shade = min(shade, k*h/dist);
+        shade = min(shade, smoothstep(0., 1., k*h/dist)); // Subtle difference. Thanks to IQ for this tidbit.
+        // So many options here, and none are perfect: dist += min(h, .2), dist += clamp(h, .01, .2), 
+        // clamp(h, .02, stepDist*2.), etc.
+        dist += clamp(h, .02, .25);
+        
+        // Early exits from accumulative distance function calls tend to be a good thing.
+        if (h<0. || dist>end) break; 
+        //if (h<.001 || dist > end) break; // If you're prepared to put up with more artifacts.
+    }
+
+    // I've added 0.5 to the final shade value, which lightens the shadow a bit. It's a preference thing. 
+    // Really dark shadows look too brutal to me.
+    return min(max(shade, 0.) + .25, 1.); 
+}
+
 
 // Second pass, which is the first, and only, reflected bounce. 
 // Virtually the same as above, but with fewer iterations and less 
@@ -150,12 +175,12 @@ float circleshape(vec2 position, float radius){
 
 
 
-vec3 grad(vec3 p, float b) {
-	vec2 q = vec2(0.0, EPS);
-	return vec3(mobius(p+q.yxx, b) - mobius(p-q.yxx, b), 
-			    mobius(p+q.xyx, b) - mobius(p-q.xyx, b),
-			    mobius(p+q.xxy, b) - mobius(p-q.xxy, b));
-}
+// vec3 grad(vec3 p, float b) {
+// 	vec2 q = vec2(0.0, EPS);
+// 	return vec3(mobius(p+q.yxx, b) - mobius(p-q.yxx, b), 
+// 			    mobius(p+q.xyx, b) - mobius(p-q.xyx, b),
+// 			    mobius(p+q.xxy, b) - mobius(p-q.xxy, b));
+// }
 
 
 
@@ -169,34 +194,34 @@ mat3 rotX(float ang) {
 	return mat3(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
 }
 
-vec3 shade(vec3 p, vec3 rd, float b, mat3 m) {
-	vec3 col = vec3(0.0);
-	vec3 n = normalize(-grad(p, b));
+// vec3 shade(vec3 p, vec3 rd, float b, mat3 m) {
+// 	vec3 col = vec3(0.0);
+// 	vec3 n = normalize(-grad(p, b));
 	
-	// material
-	vec3  amb = vec3(0.05375, 0.05, 0.06625);
-	vec3  dif = vec3(0.18275, 0.17, 0.22525);
-	vec3  spe = vec3(0.332741, 0.328634, 0.346435);
-	float shin = 39.4;
+// 	// material
+// 	vec3  amb = vec3(0.05375, 0.05, 0.06625);
+// 	vec3  dif = vec3(0.18275, 0.17, 0.22525);
+// 	vec3  spe = vec3(0.332741, 0.328634, 0.346435);
+// 	float shin = 39.4;
 	
-	// key light
-	vec3 l = normalize(m*vec3(1.0));
-	vec3 h = normalize(l-rd);
-	float lambert = max(0.0, dot(n, l));
-	float blinn = lambert > 0.0 ? pow(max(0.0, dot(n, h)), shin) : 0.0;
-	col += vec3(3.0, 2.0, 3.0)*(0.4*dif*lambert + 1.4*spe*blinn + 0.1*amb);
+// 	// key light
+// 	vec3 l = normalize(m*vec3(1.0));
+// 	vec3 h = normalize(l-rd);
+// 	float lambert = max(0.0, dot(n, l));
+// 	float blinn = lambert > 0.0 ? pow(max(0.0, dot(n, h)), shin) : 0.0;
+// 	col += vec3(3.0, 2.0, 3.0)*(0.4*dif*lambert + 1.4*spe*blinn + 0.1*amb);
 	
-	// fill light
-	lambert = max(0.0, dot(n, -rd));
-	blinn = lambert > 0.0 ? pow(lambert, shin) : 0.0;
-	col += vec3(1.0)*(0.4*dif*lambert + 1.4*spe*blinn + 0.1*amb);
+// 	// fill light
+// 	lambert = max(0.0, dot(n, -rd));
+// 	blinn = lambert > 0.0 ? pow(lambert, shin) : 0.0;
+// 	col += vec3(1.0)*(0.4*dif*lambert + 1.4*spe*blinn + 0.1*amb);
 	
-	// rim light
-	// col += 2.25*pow(clamp(1.0+dot(n, rd), 0.0, 1.0), 3.0); 
-    col += 2.25*pow(clamp(1.0+dot(n, rd), 0.0, 1.0), 3.0); 
+// 	// rim light
+// 	// col += 2.25*pow(clamp(1.0+dot(n, rd), 0.0, 1.0), 3.0); 
+//     col += 2.25*pow(clamp(1.0+dot(n, rd), 0.0, 1.0), 3.0); 
 	
-	return col/(col+1.0); // reinhard
-}
+// 	return col/(col+1.0); // reinhard
+// }
 
 float animCurve(in float t) {
 	t = mod(u_time, 15.0);
@@ -318,6 +343,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     // See "traceRef" below.
     vec3 sceneColor = doColor(ro, rd, sn, lp, t);
 
+    float sh = softShadow(ro +  sn*.0015, lp, 16.);
+
     // SECOND PASS - REFLECTED RAY
     
     // Standard reflected ray, which is just a reflection of the unit
@@ -344,47 +371,14 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
     // Coloring the reflected hit point, then adding a portion of it to the final scene color.
     // How much you add, and how you apply it is up to you, but I'm simply adding 35 percent.
-    sceneColor += doColor(ro, rd, sn, lp, t) * 0.35;
+    sceneColor += doColor(ro, rd, sn, lp, t) * 0.35 + 0.1*sh;
     // Other combinations... depending what you're trying to achieve.
     //sceneColor = sceneColor*.7 + doColor(ro, rd, sn, lp, t)*.5;
-
 
     // Clamping the scene color, performing some rough gamma correction (the "sqrt" bit), then 
     // presenting it to the screen.
 	fragColor = vec4(sqrt(clamp(sceneColor, 0., 1.)), 1);
-
-	// // sphere-trace to torus envelope.
-	// for (int i = 0; i < STEPS; ++i) {
-	// 	if (d < EPS || t1 > 4.0) continue;
-	// 	d = torus(p);
-	// 	t1 += d; 
-    //     p = ro + t1*rd;
-	// }
-	
-	// if (d < EPS) {	
-	// 	// forward march to find root interval.
-	// 	float t2 = t1; d = mobius(p, b);
-	// 	for (int i = 0; i < 2*STEPS; ++i) {
-	// 		if (d > 0.0) continue;
-	// 		d = mobius(p, b);
-	// 		t2 += 2.0*EPS; p = ro + t2*rd;
-	// 	}
-	// 	// bisect towards root.
-	// 	if (d > 0.0) {
-	// 		for (int i = 0; i < 12; ++i) {
-	// 			d = 0.5*(t1+t2); p = ro + d*rd;
-	// 			if (mobius(p, b) > 0.0) t2 = d; else t1 = d;
-	// 		}
-	// 		col = shade(ro+d*rd, rd, b, m);
-	// 	}
-	// }
-	
-	// post-processing
-	// col = smoothstep(0.0, 1.0, col);
-	// col *= 0.5 + 0.5*pow(25.0*fc.x*(1.0-fc.x)*fc.y*(1.0-fc.y), 0.45);
-	// col = pow(col, vec3(1.0/2.2));
-	
-	// fragColor = vec4(col,1.0);
+ 
 }
 
 void main() {        
