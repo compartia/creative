@@ -7,7 +7,7 @@ precision mediump float;
 
 
 #define FAR 23.5
-
+#define TOR_V vec2(1.0, 0.3333)
 
 #ifdef HD
     #define EPS 0.001
@@ -24,9 +24,8 @@ precision mediump float;
 
 #define ROTATION
 
-// perimeter of the moebius strip is 38
+
 #define PI 3.14159265359
-// #define PER 2.
 #define RADIUS 1.// (1.0/(PI*2.0)*PER)
 #define mobius_th_spped 5.
 
@@ -65,12 +64,8 @@ float opSmoothSubtraction( float d1, float d2, float k ) {
 
  
 float torus(vec3 p) {
-	vec2 t = vec2(1.0, 0.3333);
-    // return sdTorus(p, t);
-    float l = length(p.xy);
-    // l = l + .1 * cos( .3 * l + 1.*u_time) ;
-  	vec2 q = vec2(l - t.x, p.z);
-  	return length(q) - t.y;
+  	vec2 q = vec2(length(p.xy) - TOR_V.x, p.z);
+  	return length(q) - TOR_V.y;
 }
 
 
