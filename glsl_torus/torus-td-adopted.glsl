@@ -15,7 +15,7 @@ precision mediump float;
 // #define SHADOWS
 
 
-#define FAR 23.5
+#define FAR 33.5
 #define TOR_V vec2(1.0, 0.3333)
 
 #ifdef HD
@@ -95,7 +95,7 @@ float mob(vec3 p){
     float theta = atan(p.x, p.y);
     vec2 inCyl = vec2(1., 0) - cyl;
     // rotate 180° to form the loop
-    float _rot = anim_sinesine(0., 2., 1.1);//2.0
+    float _rot = anim_sinesine(0., 8., 0.4);//2.0
     inCyl *= rot(theta * 1.5 - _rot);
     // coordinates in a torus (cylindrical coordinates + position on the stripe)
     vec3 inTor = vec3(inCyl, theta * RADIUS);
@@ -114,8 +114,10 @@ float mob(vec3 p){
 
 
 float map(vec3 p){
-    
-    vec3 rep  =  vec3( sin(1.25 * p.xy), .1 + (  sin(0.95 *  p.z) + 0.2 * sin(0.55 *  p.y)   ) );
+    float z_wrap = anim_sinesine(0.2, 4., 1.31);
+    vec3 rep  =  vec3( 
+        sin(1.25 * p.xy), 
+        .1 + (  sin(0.95 *  p.z) + z_wrap * sin(0.2 *  p.x)   ) );
 
     float tor = torus(rep);
     float mob = mob(rep);
@@ -244,14 +246,14 @@ vec3 getObjectColor(vec3 p){
 
 vec3  doColor(in vec3 sp, in vec3 rd, in vec3 sn, in vec3 lp, float t){
     vec3 ld = lp-sp; // Light direction vector.
-    float lDist = max(length(ld), .001); // Light to surface distance.
+    float lDist = max(length(ld), EPS); // Light to surface distance.
     ld /= lDist; // Normalizing the light vector.
     
     // Attenuating the light, based on distance.
     float atten = 1. / (1. + lDist*.2 + lDist*lDist*.1);
     
     // Standard diffuse term.
-    float diff = max(dot(sn, ld), 0.);
+    float diff = 0.2 * max(dot(sn, ld), 0.);
 
     // Standard specualr term.
     float spec = pow(max( dot( reflect(-ld, sn), -rd ), 0.), 8.);
@@ -265,11 +267,11 @@ vec3  doColor(in vec3 sp, in vec3 rd, in vec3 sn, in vec3 lp, float t){
     
     
     // Fog factor -- based on the distance from the camera.
-    float fogF = smoothstep(0., 0.95, t/FAR);
+    float fogF = smoothstep(0., 0.95, t/12.);
     //
     // Applying the background fog. Just black, in this case, but you could
     // render sky, etc, as well.
-    sceneCol = mix(sceneCol, vec3(0), fogF); 
+    sceneCol = mix(sceneCol, vec3(0., .1 + .1* sin (.2 * sp.y) , .4 + .3* sin (12.* rd.x) ), fogF); 
 
     
     // Return the color. Performed once every pass... of which there are
@@ -283,7 +285,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 	vec2 uv = -1.0+2.0*fc;
 	uv.x *= u_resolution.x/u_resolution.y;	
 	
-	vec2 mouse = 0.5*TAU*(-1.0+2.0*u_mouse.xy/u_resolution.xy);
+	vec2 mouse = 0.5 * TAU * (-1.0 + 2.0 * u_mouse.xy/u_resolution.xy);
 	
 	// #ifndef HOMOTOPY
 	// 	float b = 0.015;

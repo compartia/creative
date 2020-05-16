@@ -101,31 +101,27 @@ float mob(vec3 p){
     return d;
 }
 
- 
-
-
-
 
 float map(vec3 p){
     
-    vec3 rep  = p;//vec3( sin(1.25 * p.xy), .5 + sqrt(length(p)) * (sin(0.95*p.z) - cos(0.9 * p.y)) );
+    float z_wrap = anim_sinesine(0.2, 4., 1.31);
+    vec3 rep  =  vec3( 
+        sin(1.25 * p.xy), 
+        .1 + (  sin(0.95 *  p.z) + z_wrap * sin(0.2 *  p.x)   ) );
 
     float tor = torus(rep);
     float mob = mob(rep);
-    // return mobius(p, 0.015);
-    // return tor;//opSubtraction (tor, link);
+    
      
     float dis = 0.0;//displacement(p);
     float smoot = anim_sinesine(0.001, .2, 3.31);//2.0
-    return dis + opSmoothSubtraction(mob, tor, smoot  );//opSubtraction (  tor , mob) ;
+    return dis + opSmoothSubtraction(mob, tor, smoot  ); //opSubtraction (  tor , mob) ;
 }
 
-
-// Cheap shadows are hard. In fact, I'd almost say, shadowing repeat objects - in a setting like this - with limited 
-// iterations is impossible... However, I'd be very grateful if someone could prove me wrong. :)
+// non-Cheap shadows 
 float softShadow(vec3 ro, vec3 lp, float k){
 
-    // More would be nicer. More is always nicer, but not really affordable... Not on my slow test machine, anyway.
+    
     const int maxIterationsShad = SHAD_STEPS; 
     
     vec3 rd = lp - ro; // Unnormalized direction ray.
