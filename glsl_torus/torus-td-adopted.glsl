@@ -1,46 +1,48 @@
+// on the derivatives based noise: http://iquilezles.org/www/articles/morenoise/morenoise.htm
+// on the soft shadow technique: http://iquilezles.org/www/articles/rmshadows/rmshadows.htm
+// on the fog calculations: http://iquilezles.org/www/articles/fog/fog.htm
+// on the lighting: http://iquilezles.org/www/articles/outdoorslighting/outdoorslighting.htm
+// on the raymarching: http://iquilezles.org/www/articles/terrainmarching/terrainmarching.htm
+
+layout (location = 0) out vec4 TDColor;
+
 #ifdef GL_ES
 precision mediump float;
 #endif
 
 
-#define HD
 
 
-#define FAR 23.5
 
+#define FAR 14.5
+#define EPS 0.005
 
-#ifdef HD
-    #define EPS 0.001
-    #define STEPS 200
-    #define SHAD_STEPS 20
-#else
-    #define STEPS 60
-    #define SHAD_STEPS 2 //must be 30 or so
-    #define EPS 0.005
-#endif
-
+#define STEPS 120
+#define SHAD_STEPS 20
 
 #define TAU 6.28318530718
 
 #define ROTATION
 
-// perimeter of the moebius strip is 38
+
+ 
 #define PI 3.14159265359
-// #define PER 2.
-#define RADIUS 1.// (1.0/(PI*2.0)*PER)
-#define mobius_th_spped 5.
 
+#define RADIUS 1. //mebius radius, central
 
+#define mobius_th_spped 3.
+ 
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
 
-float anim_mobius_th(){
-    return 0.011 + 0.049 * (2.0 + sin( u_time * mobius_th_spped) + sin( u_time * mobius_th_spped * 0.31498) );
+float opSubtraction( float d1, float d2 ) { 
+    return max(-d1,d2); 
 }
 
-float anim_sinesine(float min, float max, float speed){
-    return min + (max -min ) * 0.25 * (2.0 + sin( u_time * speed) + sin( u_time * speed * 0.31498) );
+float opSmoothSubtraction( float d1, float d2, float k ) {
+    float h = clamp( 0.5 - 0.5*(d2+d1)/k, 0.0, 1.0 );
+    return mix( d2, -d1, h ) + k*h*(1.0-h); 
 }
 
 // tonemapping from https://www.shadertoy.com/view/lslGzl
@@ -49,18 +51,8 @@ vec3 filmicToneMapping( vec3 col ) {
     return (col * (6.2 * col + .5)) / (col * (6.2 * col + 1.7) + 0.06);
 }
 
-float opSubtraction( float d1, float d2 ) { 
-    return max(-d1,d2); 
-}
-
-
 float opUnion( float d1, float d2 ) {  
     return min(d1,d2); 
-}
-
-float opSmoothSubtraction( float d1, float d2, float k ) {
-    float h = clamp( 0.5 - 0.5*(d2+d1)/k, 0.0, 1.0 );
-    return mix( d2, -d1, h ) + k*h*(1.0-h); 
 }
 
  
@@ -68,7 +60,7 @@ float torus(vec3 p) {
 	vec2 t = vec2(1.0, 0.3333);
     // return sdTorus(p, t);
     float l = length(p.xy);
-    // l = l + .1 * cos( .3 * l + 1.*u_time) ;
+    //l = l + .1 * cos( 30 * l ) ;
   	vec2 q = vec2(l - t.x, p.z);
   	return length(q) - t.y;
 }
@@ -86,43 +78,39 @@ mat2 rot( in float a ) {
     return mat2(v, -v.y, v.x);
 }
 
-float mob(vec3 p){
-    
+
+float anim_mobius_th(){
+    return 0.13 + 0.045 * (2.0 + sin( u_time * mobius_th_spped) + sin( u_time * mobius_th_spped * 0.31498) );
+}
+
+float mobius(vec3 p){
+
     // cylindrical coordinates
     vec2 cyl = vec2(length(p.xy), p.z);
     float theta = atan(p.x, p.y);
     vec2 inCyl = vec2(1., 0) - cyl;
     // rotate 180° to form the loop
-    float _rot = anim_sinesine(0., 2., 1.1);//2.0
-    inCyl *= rot(theta * 1.5 - _rot);
+    inCyl *= rot(theta * 3.5 - 2.0);
     // coordinates in a torus (cylindrical coordinates + position on the stripe)
     vec3 inTor = vec3(inCyl, theta * RADIUS);
     
     // add the band
-    float th = anim_sinesine(0.01, 0.25, 4.);
-    float bandDist = sdBox(inTor, vec3(th, 0.5, 100)) - 0.0001;
+    float bandDist = sdBox(inTor, vec3(anim_mobius_th(), 0.5, 100)) - 0.0001;
     float d = bandDist;
 
     return d;
 }
-
  
 
 
-
-
 float map(vec3 p){
-    
-    vec3 rep  = p;//vec3( sin(1.25 * p.xy), .5 + sqrt(length(p)) * (sin(0.95*p.z) - cos(0.9 * p.y)) );
-
+     
+    vec3 rep  = vec3( sin(1.25 * p.xy), sin(0.95*p.z) );
     float tor = torus(rep);
-    float mob = mob(rep);
-    // return mobius(p, 0.015);
-    // return tor;//opSubtraction (tor, link);
+    float mob = mobius(rep);
      
     float dis = 0.0;//displacement(p);
-    float smoot = anim_sinesine(0.001, .2, 3.31);//2.0
-    return dis + opSmoothSubtraction(mob, tor, smoot  );//opSubtraction (  tor , mob) ;
+    return dis + opSmoothSubtraction(mob, tor, 0.045  );//opSubtraction (  tor , mob) ;
 }
 
 
@@ -136,12 +124,11 @@ float softShadow(vec3 ro, vec3 lp, float k){
     vec3 rd = lp - ro; // Unnormalized direction ray.
 
     float shade = 1.;
-    float dist = .002;    
-    float end = max(length(rd), .001);
+    float dist = EPS/2;    
+    float end = max(length(rd), EPS/4);
     float stepDist = end/float(maxIterationsShad);
     
-    rd /= end;
-// glslViewer glsl_torus/torus.frag -w 1280 -h 1280 --headless -o test.png
+    rd /= end;    
     // Max shadow iterations - More iterations make nicer shadows, but slow things down. Obviously, the lowest 
     // number to give a decent shadow is the best one to choose. 
     for (int i = 0; i<maxIterationsShad; i++){
@@ -158,8 +145,7 @@ float softShadow(vec3 ro, vec3 lp, float k){
         //if (h<.001 || dist > end) break; // If you're prepared to put up with more artifacts.
     }
 
-    // I've added 0.5 to the final shade value, which lightens the shadow a bit. It's a preference thing. 
-    // Really dark shadows look too brutal to me.
+
     return min(max(shade, 0.) + .25, 1.); 
 }
 
@@ -207,16 +193,6 @@ mat3 rotX(float ang) {
 	float c = cos(ang), s = sin(ang);
 	return mat3(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
 }
-
- 
-
-// float animCurve(in float t) {
-// 	t = mod(u_time, 15.0);
-// 	float f1 = smoothstep(5.0, 7.0, t);
-// 	float f2 = 1.0-smoothstep(7.0, 9.0, t);
-// 	return 0.01+0.09*f1*f2;
-// }
-
 
 
 
@@ -326,12 +302,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     // See "traceRef" below.
     vec3 sceneColor = doColor(ro, rd, sn, lp, t);
 
-    
-    #ifdef HD
-       float sh = softShadow(ro +  sn*.0015, lp, 16.);
-    #else
-        float sh = 0.01;
-    #endif
+    float sh = 0;//softShadow(ro +  sn*.0015, lp, 16.);
 
     // SECOND PASS - REFLECTED RAY
     
@@ -370,6 +341,11 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
  
 }
 
-void main() {        
-  mainImage(gl_FragColor, gl_FragCoord.xy);
+//void main() {        
+//  mainImage(gl_FragColor, gl_FragCoord.xy);
+//}
+
+
+void main(){
+	mainImage(TDColor, vUV.st*u_resolution.xy);
 }
