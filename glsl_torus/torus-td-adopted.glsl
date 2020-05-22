@@ -110,9 +110,6 @@ float mob(vec3 p){
 
  
 
-
-
-
 float map(vec3 p){
     float z_wrap = anim_sinesine(0.2, 4., 1.31);
     vec3 rep  =  vec3( 
@@ -121,10 +118,9 @@ float map(vec3 p){
 
     float tor = torus(rep);
     float mob = mob(rep);
-    // return mobius(p, 0.015);
-    // return tor;//opSubtraction (tor, link);
+  
      
-    float dis = 0.0;//displacement(p);
+    float dis = 0.0; //displacement(p);
     float smoot = anim_sinesine(0.001, .2, 3.31);//2.0
     return dis + opSmoothSubtraction(mob, tor, smoot  );//opSubtraction (  tor , mob) ;
 }
