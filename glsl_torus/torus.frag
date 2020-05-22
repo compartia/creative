@@ -1,3 +1,4 @@
+ 
 #ifdef GL_ES
 precision mediump float;
 #endif
@@ -27,15 +28,40 @@ precision mediump float;
 
 #define PI 3.14159265359
 #define RADIUS 1.// (1.0/(PI*2.0)*PER)
-#define mobius_th_spped 5.
+#define mobius_th_speed 5.
 
 
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
 
+vec3 pal_c1 = vec3(1,58,95) / 255.;
+vec3 pal_c2 = vec3(131,106,178) /255.;
+vec3 pal_c3 = vec3(239,188,119) /255.;
+vec3 pal_c4 = vec3(175,58,30) /255.;
+vec3 pal_c5 = vec3(0,2,5) /255.;
+vec3 pal_c6 = vec3(50,86,96) /255.;
+vec3 pal_c7 = vec3(9,29,27) /255.;
+
+float relu(float x){
+    return x < 0. ? 0. : x > 1. ? 1. :  x;
+}
+
+vec3 gradient(vec3 fc){
+
+    float blendx = 5. * fc.x + 0.2 * sin(86. * fc.y) + 0.16 * sin(66. * fc.x) ;
+    vec3 rgb = 
+          mix( pal_c1, pal_c2, relu(blendx +0.01 ));
+    rgb = mix( rgb, pal_c3, relu( -1.3 + blendx  ));
+    rgb = mix( rgb, pal_c4, relu( -2. + blendx  ));
+    rgb = mix( rgb, pal_c5, relu( -3.1 + blendx  ));
+    rgb = mix( rgb, pal_c6, relu( -4.1 + blendx  ));
+    rgb = mix( rgb, pal_c7, relu( -5. + blendx  ));
+    return rgb;
+}
+
 float anim_mobius_th(){
-    return 0.011 + 0.049 * (2.0 + sin( u_time * mobius_th_spped) + sin( u_time * mobius_th_spped * 0.31498) );
+    return 0.011 + 0.049 * (2.0 + sin( u_time * mobius_th_speed) + sin( u_time * mobius_th_speed * 0.31498) );
 }
 
 float anim_sinesine(float min, float max, float speed){
@@ -81,8 +107,8 @@ mat2 rot( in float a ) {
     return mat2(v, -v.y, v.x);
 }
 
-float mob(vec3 p){
-    
+float mobius(vec3 p){
+    p=p+0.001*sin(p*150.0);
     // cylindrical coordinates
     vec2 cyl = vec2(length(p.xy), p.z);
     float theta = atan(p.x, p.y);
@@ -105,17 +131,19 @@ float mob(vec3 p){
 float map(vec3 p){
     
     float z_wrap = anim_sinesine(0.2, 4., 1.31);
-    vec3 rep  =  vec3( 
-        sin(1.25 * p.xy), 
-        .1 + (  sin(0.95 *  p.z) + z_wrap * sin(0.2 *  p.x)   ) );
+
+     vec3 rep  = p;//vec3( p.x % 3, p.y % 3,   p.z);//
+    // vec3 rep  =  vec3( 
+    //     sin(1.25 * p.xy), 
+    //     .1 + (  sin(0.95 *  p.z) + z_wrap * sin(0.2 *  p.x)   ) );
 
     float tor = torus(rep);
-    float mob = mob(rep);
+    float mobius = mobius(rep);
     
      
     float dis = 0.0;//displacement(p);
-    float smoot = anim_sinesine(0.001, .2, 3.31);//2.0
-    return dis + opSmoothSubtraction(mob, tor, smoot  ); //opSubtraction (  tor , mob) ;
+    float smoothh = anim_sinesine(0.001, .1, 3.31); //2.0
+    return dis + opSmoothSubtraction( mobius, tor, smoothh  ); //opSubtraction (  tor , mob) ;
 }
 
 // non-Cheap shadows 
@@ -132,7 +160,7 @@ float softShadow(vec3 ro, vec3 lp, float k){
     float stepDist = end/float(maxIterationsShad);
     
     rd /= end;
-// glslViewer glsl_torus/torus.frag -w 1280 -h 1280 --headless -o test.png
+ 
     // Max shadow iterations - More iterations make nicer shadows, but slow things down. Obviously, the lowest 
     // number to give a decent shadow is the best one to choose. 
     for (int i = 0; i<maxIterationsShad; i++){
@@ -183,9 +211,9 @@ vec3 getNormal(in vec3 p) {
 	return normalize(vec3(map(p + e.xyy) - map(p - e.xyy), map(p + e.yxy) - map(p - e.yxy),	map(p + e.yyx) - map(p - e.yyx)));
 }
 
-float circleshape(vec2 position, float radius){
-	return step(radius, length(position - vec2(0.5)));
-}
+// float circleshape(vec2 position, float radius){
+// 	return step(radius, length(position - vec2(0.5)));
+// }
 
 
 
@@ -228,7 +256,9 @@ float trace(vec3 ro, vec3 rd){
 }
 
 vec3 getObjectColor(vec3 p){   
-    return vec3( cos(p.z*13.) + 1.0,  1.3 * torus( sin( p * 3.)),  sin(p.z*12.) + 1.0 );    
+
+    return gradient( 0.5 +  sin(3.* p * rotY(0.5))*0.5 );
+    // return vec3( cos(p.z*13.) + 1.0,  1.3 * torus( sin( p * 3.)),  sin(p.z*12.) + 1.0 );    
 }
 
 vec3  doColor(in vec3 sp, in vec3 rd, in vec3 sn, in vec3 lp, float t){
@@ -247,7 +277,7 @@ vec3  doColor(in vec3 sp, in vec3 rd, in vec3 sn, in vec3 lp, float t){
     
     // Coloring the object. You could set it to a single color, to
     // make things simpler, if you wanted.
-    vec3 objCol = getObjectColor(sp);
+    vec3 objCol = getObjectColor(sn);
     
     // Combining the above terms to produce the final scene color.
     vec3 sceneCol = (objCol*(diff + .15) + vec3(1., .6, .2)*spec*2.) * atten;
@@ -317,13 +347,13 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     // See "traceRef" below.
     vec3 sceneColor = doColor(ro, rd, sn, lp, t);
 
+    float sh = 0.01;
     
     #ifdef HD
-       float sh = softShadow(ro +  sn*.0015, lp, 16.);
-    #else
-        float sh = 0.01;
+        sh = 0.1;
+        // sh = softShadow(ro +  sn*.0015, lp, 16.);
     #endif
-
+    
     // SECOND PASS - REFLECTED RAY
     
     // Standard reflected ray, which is just a reflection of the unit
@@ -356,7 +386,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
     // Clamping the scene color, performing some rough gamma correction (the "sqrt" bit), then 
     // presenting it to the screen.
-    sceneColor=filmicToneMapping(0.7*sceneColor);
+    // sceneColor=filmicToneMapping(0.7*sceneColor);
 	fragColor =  vec4(clamp(sceneColor, 0., 1.), 1);
  
 }
