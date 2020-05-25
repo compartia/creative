@@ -6,22 +6,22 @@
 
 // tonemapping from https://www.shadertoy.com/view/lslGzl
 layout (location = 0) out vec4 TDColor;
+ 
 
 #ifdef GL_ES
 precision highp float;
 #endif
 
-
+#define REFLECTIONS
 #define HD
-// #define SHADOWS
-
-
+ 
+#define gamma 0.9
 #define FAR 6.
 #define TOR_V vec2(1.0, 0.393333)
 
 #ifdef HD
-    #define EPS 0.0001
-    #define STEPS 1000
+    #define EPS 0.001
+    #define STEPS 260
     #define SHAD_STEPS 20
 #else
     #define STEPS 60
@@ -33,23 +33,30 @@ precision highp float;
 #define TAU 6.28318530718
 
 #define ROTATION
-
+#define RADIUS 1.0
 #define PI 3.14159265359
-#define RADIUS 1. // (1.0/(PI*2.0)*PER)
-float  mobius_th_speed = 5.;  
+  
  
-
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
 
-vec3 pal_c1 = vec3(1,48,95) / 255.;
-vec3 pal_c2 = vec3(131,106,178) /255.;
-vec3 pal_c3 = vec3(249,188,119) /255.;
-vec3 pal_c4 = vec3(175,58,30) /255.;
-vec3 pal_c5 = vec3(0,2,5) /255.;
-vec3 pal_c6 = vec3(50,86,96) /255.;
-vec3 pal_c7 = vec3(9,29,27) /255.;
+// vec3 pal_c1 = vec3(1,48,95) / 255.;
+// vec3 pal_c2 = vec3(131,106,178) /255.;
+// vec3 pal_c3 = vec3(249,188,119) /255.;
+// vec3 pal_c4 = vec3(175,58,30) /255.;
+// vec3 pal_c5 = vec3(0,2,5) /255.;
+// vec3 pal_c6 = vec3(50,86,96) /255.;
+// vec3 pal_c7 = vec3(9,29,27) /255.;
+
+vec3 pal_c0 = vec3(0, 0, 0) / 255.;
+vec3 pal_c1 = vec3(43, 10, 111) / 255.;
+vec3 pal_c2 = vec3(120, 10, 142) /255.;
+vec3 pal_c3 = vec3(200, 26, 44) /255.;
+vec3 pal_c4 = vec3(181, 203, 134) /255.;
+vec3 pal_c5 = vec3(21, 172, 215) /255.;
+vec3 pal_c6 = vec3(250, 196, 176) /255.;
+vec3 pal_c7 = vec3(251, 246, 218) /255.;
 
 float relu(float x){
     return x < 0. ? 0. : x > 1. ? 1. :  x;
@@ -57,11 +64,11 @@ float relu(float x){
 
 vec3 gradient(float blend){
 
-    float blendx = 5. * blend;//+ 0.2 * sin(86. * fc.y) + 0.16 * sin(66. * fc.x) ;
+    float blendx = 5.5 * blend;//+ 0.2 * sin(86. * fc.y) + 0.16 * sin(66. * fc.x) ;
 
     // blendx = 4. + 3.*sin(0.4*blendx);
-    vec3 rgb = 
-          mix( pal_c1, pal_c2, relu(blendx +0.01 ));
+    vec3 rgb = mix( pal_c0, pal_c1, relu(blendx +0.01 ));
+    rgb = mix( rgb, pal_c2, relu( -1.3 + blendx  ));
     rgb = mix( rgb, pal_c3, relu( -1.3 + blendx  ));
     rgb = mix( rgb, pal_c4, relu( -2. + blendx  ));
     rgb = mix( rgb, pal_c5, relu( -3.1 + blendx  ));
@@ -91,7 +98,16 @@ float opSmoothSubtraction( float d1, float d2, float k ) {
     return mix( d2, -d1, h ) + k*h*(1.0-h); 
 }
 
+float opSmoothUnion( float d1, float d2, float k ) {
+    float h = clamp( 0.5 + 0.5*(d2-d1)/k, 0.0, 1.0 );
+    return mix( d2, d1, h ) - k*h*(1.0-h); 
+}
+
  
+float sdSphere( vec3 p, float s ){
+  return length(p)-s;
+}
+
 float torus(vec3 p) {
     //  p.z *=sin(p.x*p.z + u_time);
   	vec2 q = vec2(length(p.xy) - TOR_V.x, p.z);
@@ -119,7 +135,7 @@ float mobius(vec3 p){
     vec2 inCyl = vec2(1., 0) - cyl;
     // rotate 180° to form the loop
     float _rot = 0.2;
-    inCyl *= rot(theta * 6 - _rot);
+    inCyl *= rot(theta * 6. - _rot);
     // coordinates in a torus (cylindrical coordinates + position on the stripe)
     vec3 inTor = vec3(inCyl, theta * RADIUS);
     
@@ -148,7 +164,10 @@ float map(vec3 p){
     // d=-0.35*sin(d*3.);
     // float dis = 0.0;//displacement(p);
      
-    return  opSmoothSubtraction( mobius, tor, 0.18  ); //opSubtraction (  tor , mob) ;
+    float spiral =  opSmoothSubtraction( mobius, tor, 0.18  ); //opSubtraction (  tor , mob) ;
+
+    float sphere = sdSphere(p, 0.43);
+    return opSmoothUnion (spiral, sphere, 0.266);
 
 
     // return mobius;
@@ -172,7 +191,7 @@ float traceRef(vec3 ro, vec3 rd){
 
         d = map(ro + rd*t);        
         if(abs(d)<.002 || t>FAR) break;        
-        t += d;
+        t += d* .99;
     }
     
     return t;
@@ -207,15 +226,15 @@ float trace(vec3 ro, vec3 rd){
         d = map(ro + rd*t);
         
         // Using the hacky "abs," trick, for more accuracy. 
-        if(abs(d)<.0001 || t> 2.* FAR) break;                
-        t += d * .175;  // Using more accuracy, in the first pass.
+        if(abs(d)<.0001 || t> 1.2* FAR) break;                
+        t += d * .155;  // Using more accuracy, in the first pass.
     }
     
     return t;
 }
 
 vec3 getObjectColor(vec3 p){       
-    return gradient(0.5* sin(p.x*2. + 3.*p.y + 2*u_time)+0.5);// pal_c1;// gradient( 0.5 +  sin(3.* p.y * rotY(0.5))*0.5 );
+    return gradient(0.5* sin(p.x*2. + 3.*p.y + 2. * u_time)+0.5); 
 }
 
 vec3  doColor(in vec3 sp, in vec3 rd, in vec3 sn, in vec3 lp, float t, in vec2 fc){
@@ -268,6 +287,15 @@ vec3  doColor(in vec3 sp, in vec3 rd, in vec3 sn, in vec3 lp, float t, in vec2 f
     return sceneCol;
 }
 
+
+vec3 linearToneMapping(vec3 color)
+{
+	float exposure = 1.;
+	color = clamp(exposure * color, 0., 1.);
+	color = pow(color, vec3(1. / gamma));
+	return color;
+}
+
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
 	vec2 fc = fragCoord.xy / u_resolution.xy;
@@ -285,7 +313,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
     
     // Ray origin. 
-    vec3 ro = m * vec3(0.0, 0.0, 2.17);
+    vec3 ro = m * vec3(0.0, 0.0, 1.6);
 
     // Light position. Set in the vicinity the ray origin.
     vec3 lp = ro + vec3(0., 1., -.5);
@@ -314,46 +342,54 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     // See "traceRef" below.
     vec3 sceneColor = doColor(ro, rd, sn, lp, t, fc);
 
-    float sh = 0.01;
+    float sh = 0.001;
   
     
-    // SECOND PASS - REFLECTED RAY
+    #ifdef REFLECTIONS
+        // SECOND PASS - REFLECTED RAY
+        
+        // Standard reflected ray, which is just a reflection of the unit
+        // direction ray off of the intersected surface. You use the normal
+        // at the surface point to do that. Hopefully, it's common sense.
+        rd = reflect(rd, sn);
+        
+        // The reflected pass begins where the first ray ended, which is the suface
+        // hit point, or in a few cases, beyond the far plane. By the way, for the sake
+        // of simplicity, we'll perform a reflective pass for non hit points too. Kind
+        // of wasteful, but not really noticeable. The direction of the new ray will
+        // obviously be in the direction of the reflected ray. See just above.
+        //
+        // To anyone who's new to this, don't forgot to nudge the ray off of the 
+        // initial surface point. Otherwise, you'll intersect with the surface
+        // you've just hit. After years of doing this, I still forget on occasion.
+        t = traceRef(ro +  sn*.003, rd);
+        
+        // Advancing the ray origin, "ro," to the new reflected hit point.
+        ro += rd*t;
+        // Retrieving the normal at the reflected hit point.
+        sn = getNormal(ro);
+    #endif
     
-    // Standard reflected ray, which is just a reflection of the unit
-    // direction ray off of the intersected surface. You use the normal
-    // at the surface point to do that. Hopefully, it's common sense.
-    rd = reflect(rd, sn);
-
-     // The reflected pass begins where the first ray ended, which is the suface
-    // hit point, or in a few cases, beyond the far plane. By the way, for the sake
-    // of simplicity, we'll perform a reflective pass for non hit points too. Kind
-    // of wasteful, but not really noticeable. The direction of the new ray will
-    // obviously be in the direction of the reflected ray. See just above.
-    //
-    // To anyone who's new to this, don't forgot to nudge the ray off of the 
-    // initial surface point. Otherwise, you'll intersect with the surface
-    // you've just hit. After years of doing this, I still forget on occasion.
-    t = traceRef(ro +  sn*.003, rd);
     
-    // Advancing the ray origin, "ro," to the new reflected hit point.
-    ro += rd*t;
-    
-    // Retrieving the normal at the reflected hit point.
-    sn = getNormal(ro);
 
     // Coloring the reflected hit point, then adding a portion of it to the final scene color.
     // How much you add, and how you apply it is up to you, but I'm simply adding 35 percent.
     
-    sceneColor += doColor(ro, rd, sn, lp, t, fc) * 0.35 + 0.1 * sh;
+    sceneColor += doColor(ro, rd, sn, lp, t, fc) * 0.3 ;
     // Other combinations... depending what you're trying to achieve.
     // sceneColor = sceneColor ;//+ doColor(ro, rd, sn, lp, t)*.5;
 
     // Clamping the scene color, performing some rough gamma correction (the "sqrt" bit), then 
     // presenting it to the screen.
-    // sceneColor=filmicToneMapping(0.7*sceneColor);
-	fragColor =  vec4(clamp(sceneColor, 0., 1.), 1);
+    sceneColor=linearToneMapping(0.9*sceneColor);
+	fragColor =  vec4(clamp(sceneColor, 0., 1.), 1.);
  
 }
+
+ 
+// void main() {        
+//   mainImage(gl_FragColor, gl_FragCoord.xy);
+// }
 
 
 void main(){

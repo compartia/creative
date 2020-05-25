@@ -29,7 +29,7 @@ precision mediump float;
 #define PI 3.14159265359
 #define RADIUS 1.// (1.0/(PI*2.0)*PER)
 #define mobius_th_speed 5.
-
+#define gamma 2.2
 
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
@@ -73,30 +73,9 @@ float anim_sinesine(float min, float max, float speed){
 }
 
 // tonemapping from https://www.shadertoy.com/view/lslGzl
-vec3 filmicToneMapping( vec3 col ) {
-    col = max(vec3(0.), col - vec3(0.004));
-    return (col * (6.2 * col + .5)) / (col * (6.2 * col + 1.7) + 0.06);
-}
-float gamma = 2.2;
-vec3 linearToneMapping(vec3 color)
-{
-	float exposure = 1.;
-	color = clamp(exposure * color, 0., 1.);
-	color = pow(color, vec3(1. / gamma));
-	return color;
-}
-
-
-vec3 RomBinDaHouseToneMapping(vec3 color)
-{
-    color = exp( -1.0 / ( 2.72*color + 0.15 ) );
-	color = pow(color, vec3(1. / gamma));
-	return color;
-}
 float opSubtraction( float d1, float d2 ) { 
     return max(-d1,d2); 
 }
-
 
 float opUnion( float d1, float d2 ) {  
     return min(d1,d2); 

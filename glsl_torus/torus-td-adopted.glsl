@@ -35,7 +35,7 @@ precision mediump float;
 
 #define PI 3.14159265359
 #define RADIUS 1. // (1.0/(PI*2.0)*PER)
-float  mobius_th_speed = 5.;  
+ 
  
 
 uniform vec2 u_resolution;
