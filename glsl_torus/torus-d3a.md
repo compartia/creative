@@ -5,11 +5,15 @@
         margin: 0;
     }
 
-    #container {
+   #container {
         position: absolute;
+        width: 400px;
+        height: 400px;
+        z-index: 15;
         top: 50%;
         left: 50%;
-        transform: translate(-50%,-50%);
+        margin: -200px 0 0 -200px;
+        background: red;
     }​
  
 </style>
@@ -494,7 +498,7 @@ void main() {
     }
 
     function onWindowResize( event ) {
-        renderer.setSize( window.innerWidth, window.innerHeight );
+        renderer.setSize( 400, 400 );
         uniforms.u_resolution.value.x = renderer.domElement.width;
         uniforms.u_resolution.value.y = renderer.domElement.height;
     }
