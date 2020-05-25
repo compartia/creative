@@ -25,14 +25,14 @@
     <script id="fragmentShader" type="x-shader/x-fragment">
  
 #ifdef GL_ES
-precision mediump float;
+precision highp float;
 #endif
 
 
 #define HD
 
 
-#define FAR 23.5
+#define FAR 33.5
 #define TOR_V vec2(1.0, 0.3333)
 
 #ifdef HD
@@ -436,7 +436,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     // Clamping the scene color, performing some rough gamma correction (the 'sqrt' bit), then 
     // presenting it to the screen.
     ///* sceneColor = RomBinDaHouseToneMapping(0.6*sceneColor); */
-	fragColor =   vec4(clamp(sceneColor, 0., 1.), 1);
+	fragColor =   vec4(clamp(sceneColor, 0.001, 1.0), 1.0);
     
 }
 
@@ -445,68 +445,68 @@ void main() {
 }
 
         
-    </script>
-    <script>
-        var container;
-        var camera, scene, renderer;
-        var uniforms;
+</script>
+<script>
+    var container;
+    var camera, scene, renderer;
+    var uniforms;
 
-        init();
-        animate();
+    init();
+    animate();
 
-        function init() {
-            container = document.getElementById( 'container' );
+    function init() {
+        container = document.getElementById( 'container' );
 
-            camera = new THREE.Camera();
-            camera.position.z = 1;
+        camera = new THREE.Camera();
+        camera.position.z = 1;
 
-            scene = new THREE.Scene();
+        scene = new THREE.Scene();
 
-            var geometry = new THREE.PlaneBufferGeometry( 2, 2 );
+        var geometry = new THREE.PlaneBufferGeometry( 2, 2 );
 
-            uniforms = {
-                u_time: { type: "f", value: 1.0 },
-                u_resolution: { type: "v2", value: new THREE.Vector2() },
-                u_mouse: { type: "v2", value: new THREE.Vector2() }
-            };
+        uniforms = {
+            u_time: { type: "f", value: 1.0 },
+            u_resolution: { type: "v2", value: new THREE.Vector2() },
+            u_mouse: { type: "v2", value: new THREE.Vector2() }
+        };
 
-            var material = new THREE.ShaderMaterial( {
-                uniforms: uniforms,
-                vertexShader: document.getElementById( 'vertexShader' ).textContent,
-                fragmentShader: document.getElementById( 'fragmentShader' ).textContent
-            } );
+        var material = new THREE.ShaderMaterial( {
+            uniforms: uniforms,
+            vertexShader: document.getElementById( 'vertexShader' ).textContent,
+            fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+        } );
 
-            var mesh = new THREE.Mesh( geometry, material );
-            scene.add( mesh );
+        var mesh = new THREE.Mesh( geometry, material );
+        scene.add( mesh );
 
-            renderer = new THREE.WebGLRenderer();
-            renderer.setPixelRatio( window.devicePixelRatio );
+        renderer = new THREE.WebGLRenderer();
+        renderer.setPixelRatio( window.devicePixelRatio );
 
-            container.appendChild( renderer.domElement );
+        container.appendChild( renderer.domElement );
 
-            onWindowResize();
-            window.addEventListener( 'resize', onWindowResize, false );
+        onWindowResize();
+        window.addEventListener( 'resize', onWindowResize, false );
 
-            document.onmousemove = function(e){
-              uniforms.u_mouse.value.x = e.pageX
-              uniforms.u_mouse.value.y = e.pageY
-            }
+        document.onmousemove = function(e){
+            uniforms.u_mouse.value.x = e.pageX
+            uniforms.u_mouse.value.y = e.pageY
         }
+    }
 
-        function onWindowResize( event ) {
-            renderer.setSize( window.innerWidth, window.innerHeight );
-            uniforms.u_resolution.value.x = renderer.domElement.width;
-            uniforms.u_resolution.value.y = renderer.domElement.height;
-        }
+    function onWindowResize( event ) {
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        uniforms.u_resolution.value.x = renderer.domElement.width;
+        uniforms.u_resolution.value.y = renderer.domElement.height;
+    }
 
-        function animate() {
-            requestAnimationFrame( animate );
-            render();
-        }
+    function animate() {
+        requestAnimationFrame( animate );
+        render();
+    }
 
-        function render() {
-            uniforms.u_time.value += 0.05;
-            renderer.render( scene, camera );
-        }
-    </script>
+    function render() {
+        uniforms.u_time.value += 0.05;
+        renderer.render( scene, camera );
+    }
+</script>
  
