@@ -1,63 +1,57 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>GlslCanvas</title>
-
-         
-        <script type="text/javascript" src="https://rawgit.com/patriciogonzalezvivo/glslCanvas/master/dist/GlslCanvas.js"></script>
+ 
+<!-- meh -->
+<script type="text/javascript" src="https://rawgit.com/patriciogonzalezvivo/glslCanvas/master/dist/GlslCanvas.js"></script>
 
 
-        <style>
-            body {
-                background: #101515;
-            }
+<style>
+    body {
+        background: #101515;
+    }
 
-            #glslCanvas {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%,-50%);
-            }​
+    #glslCanvas {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+    }​
 
-            .blank {
+    .blank {
 
-            }
+    }
 
-            #credits {
-                position: absolute; 
-                bottom: 10px; 
-                right: 15px; 
-                text-align: right;
-                background: rgba(0,0,0,.5);
-                padding: 12px;
-                padding-top: 5px;
-                padding-bottom: 5px;
-                margin: 0px
-            }
+    #credits {
+        position: absolute; 
+        bottom: 10px; 
+        right: 15px; 
+        text-align: right;
+        background: rgba(0,0,0,.5);
+        padding: 12px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        margin: 0px
+    }
 
-            .label {
-                color: white;
-                font-family: Helvetica, Arial, sans-serif;
-                text-decoration: none; 
-                line-height: 0.0;
-            }
+    .label {
+        color: white;
+        font-family: Helvetica, Arial, sans-serif;
+        text-decoration: none; 
+        line-height: 0.0;
+    }
 
-            #title {
-                font-size: 24px;
-                font-weight: 600;
-            }
+    #title {
+        font-size: 24px;
+        font-weight: 600;
+    }
 
-            #author {
-                font-size: 14px; 
-                font-style: italic;
-                font-weight: 100;
-            }
-        </style>
+    #author {
+        font-size: 14px; 
+        font-style: italic;
+        font-weight: 100;
+    }
+</style>
 
-    </head>
-    <body>
-        <canvas id="glslCanvas" data-fragment="
+     
+<canvas id="glslCanvas" data-fragment="
 
 #ifdef GL_ES
 precision mediump float;
@@ -481,24 +475,21 @@ void main() {
 
 " width="800" height="600"></canvas>
 
-        <div id="credits">
-            <p class="label" id="title"></p>
-            <p class="label" id="author"></p>
-        </div>
-    </body>
+      
+   
 
-    <script>
-        var canvas = document.getElementById("glslCanvas");
-        var sandbox = new GlslCanvas(canvas);
-        var texCounter = 0;
-        var sandbox_content = "";
-        var sandbox_title = "";
-        var sandbox_author = "";
-        var sandbox_thumbnail = ""; 
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
+<script>
+    var canvas = document.getElementById("glslCanvas");
+    var sandbox = new GlslCanvas(canvas);
+    var texCounter = 0;
+    var sandbox_content = "";
+    var sandbox_title = "";
+    var sandbox_author = "";
+    var sandbox_thumbnail = ""; 
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
 
- 
-    </script>
+
+</script>
   
-</html>
+ 
