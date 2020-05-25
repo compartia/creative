@@ -16,7 +16,7 @@ precision mediump float;
     #define SHAD_STEPS 20
 #else
     #define STEPS 60
-    #define SHAD_STEPS 2 //must be 30 or so
+    #define SHAD_STEPS 0 //must be 30 or so
     #define EPS 0.005
 #endif
 
@@ -47,9 +47,12 @@ float relu(float x){
     return x < 0. ? 0. : x > 1. ? 1. :  x;
 }
 
+
 vec3 gradient(vec3 fc){
 
-    float blendx = 5. * fc.x + 0.2 * sin(86. * fc.y) + 0.16 * sin(66. * fc.x) ;
+    // float blendx = 4. * fc.x + 0.1 * sin(4. * fc.z  + u_time * 15.) ;
+    float blendx = 4.5 * fc.x + 0.2 * sin(86. * fc.y  + u_time * 15.) + 0.16 * sin(66. * fc.x + u_time * 5.)  ;
+
     vec3 rgb = 
           mix( pal_c1, pal_c2, relu(blendx +0.01 ));
     rgb = mix( rgb, pal_c3, relu( -1.3 + blendx  ));
@@ -60,6 +63,7 @@ vec3 gradient(vec3 fc){
     return rgb;
 }
 
+ 
 float anim_mobius_th(){
     return 0.011 + 0.049 * (2.0 + sin( u_time * mobius_th_speed) + sin( u_time * mobius_th_speed * 0.31498) );
 }
@@ -73,7 +77,22 @@ vec3 filmicToneMapping( vec3 col ) {
     col = max(vec3(0.), col - vec3(0.004));
     return (col * (6.2 * col + .5)) / (col * (6.2 * col + 1.7) + 0.06);
 }
+float gamma = 2.2;
+vec3 linearToneMapping(vec3 color)
+{
+	float exposure = 1.;
+	color = clamp(exposure * color, 0., 1.);
+	color = pow(color, vec3(1. / gamma));
+	return color;
+}
 
+
+vec3 RomBinDaHouseToneMapping(vec3 color)
+{
+    color = exp( -1.0 / ( 2.72*color + 0.15 ) );
+	color = pow(color, vec3(1. / gamma));
+	return color;
+}
 float opSubtraction( float d1, float d2 ) { 
     return max(-d1,d2); 
 }
@@ -84,13 +103,14 @@ float opUnion( float d1, float d2 ) {
 }
 
 float opSmoothSubtraction( float d1, float d2, float k ) {
-    float h = clamp( 0.5 - 0.5*(d2+d1)/k, 0.0, 1.0 );
+    float h = clamp( 0.5 - 0.5 * (d2+d1)/k, 0.0, 1.);
+    // h = 0.4*sin(0.9*u_time);
     return mix( d2, -d1, h ) + k*h*(1.0-h); 
 }
 
  
 float torus(vec3 p) {
-  	vec2 q = vec2(length(p.xy) - TOR_V.x, p.z);
+  	vec2 q = vec2(length(p.xy) - TOR_V.x, p.z);    
   	return length(q) - TOR_V.y;
 }
 
@@ -107,21 +127,30 @@ mat2 rot( in float a ) {
     return mat2(v, -v.y, v.x);
 }
 
+// random/hash function              
+float hash( float n ){
+  return fract(n * 41415.92653);
+}
+
+ 
+
+float th = anim_sinesine(0.02, 0.28, 4.);
 float mobius(vec3 p){
-    p=p+0.001*sin(p*150.0);
+    // p=p+0.002 * hash(p.y);
+
     // cylindrical coordinates
     vec2 cyl = vec2(length(p.xy), p.z);
-    float theta = atan(p.x, p.y);
-    vec2 inCyl = vec2(1., 0) - cyl;
+    float theta = atan(p.x,  p.y);
+    vec2 inCyl = vec2(1., 0.) - cyl;
     // rotate 180° to form the loop
-    float _rot = anim_sinesine(0., 2., 1.1);//2.0
-    inCyl *= rot(theta * 1.5 - _rot);
+    // float _rot = anim_sinesine(0., 2., 1.1);//2.0
+    inCyl *= rot( theta * 1.5 );
     // coordinates in a torus (cylindrical coordinates + position on the stripe)
     vec3 inTor = vec3(inCyl, theta * RADIUS);
     
     // add the band
-    float th = anim_sinesine(0.01, 0.25, 4.);
-    float bandDist = sdBox(inTor, vec3(th, 0.5, 100)) - 0.0001;
+    
+    float bandDist = sdBox(inTor, vec3(th, 0.4, 90)) - 0.0001;
     float d = bandDist;
 
     return d;
@@ -132,18 +161,16 @@ float map(vec3 p){
     
     float z_wrap = anim_sinesine(0.2, 4., 1.31);
 
-     vec3 rep  = p;//vec3( p.x % 3, p.y % 3,   p.z);//
-    // vec3 rep  =  vec3( 
-    //     sin(1.25 * p.xy), 
-    //     .1 + (  sin(0.95 *  p.z) + z_wrap * sin(0.2 *  p.x)   ) );
-
+     vec3 rep  = p; 
     float tor = torus(rep);
     float mobius = mobius(rep);
     
-     
-    float dis = 0.0;//displacement(p);
+    // float d = mobius(p);
+    // d=-0.35*sin(d*3.);
+    // float dis = 0.0;//displacement(p);
     float smoothh = anim_sinesine(0.001, .1, 3.31); //2.0
-    return dis + opSmoothSubtraction( mobius, tor, smoothh  ); //opSubtraction (  tor , mob) ;
+    return  opSmoothSubtraction( mobius, tor, smoothh  ); //opSubtraction (  tor , mob) ;
+    // return mobius;
 }
 
 // non-Cheap shadows 
@@ -256,7 +283,7 @@ float trace(vec3 ro, vec3 rd){
 }
 
 vec3 getObjectColor(vec3 p){   
-
+    
     return gradient( 0.5 +  sin(3.* p * rotY(0.5))*0.5 );
     // return vec3( cos(p.z*13.) + 1.0,  1.3 * torus( sin( p * 3.)),  sin(p.z*12.) + 1.0 );    
 }
@@ -386,9 +413,12 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
     // Clamping the scene color, performing some rough gamma correction (the "sqrt" bit), then 
     // presenting it to the screen.
-    // sceneColor=filmicToneMapping(0.7*sceneColor);
-	fragColor =  vec4(clamp(sceneColor, 0., 1.), 1);
- 
+
+    // sceneColor = whitePreservingLumaBasedReinhardToneMapping(sceneColor * 1.1);
+    
+    sceneColor=RomBinDaHouseToneMapping(0.6*sceneColor);
+	fragColor =   vec4(clamp(sceneColor, 0., 1.), 1);
+    // fragColor =  vec4( sceneColor, 1);
 }
 
 void main() {        
