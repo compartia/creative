@@ -4,3 +4,4 @@
 *.mov
 
 glsl_torus/Backup/**
+*.DS_Store
