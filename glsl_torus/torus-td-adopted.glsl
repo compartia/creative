@@ -34,16 +34,43 @@ precision mediump float;
 #define ROTATION
 
 #define PI 3.14159265359
-#define RADIUS 1.// (1.0/(PI*2.0)*PER)
-#define mobius_th_spped 5.
-
+#define RADIUS 1. // (1.0/(PI*2.0)*PER)
+float  mobius_th_speed = 5.;  
+ 
 
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
 
+vec3 pal_c1 = vec3(1,48,95) / 255.;
+vec3 pal_c2 = vec3(131,106,178) /255.;
+vec3 pal_c3 = vec3(249,188,119) /255.;
+vec3 pal_c4 = vec3(175,58,30) /255.;
+vec3 pal_c5 = vec3(0,2,5) /255.;
+vec3 pal_c6 = vec3(50,86,96) /255.;
+vec3 pal_c7 = vec3(9,29,27) /255.;
+
+float relu(float x){
+    return x < 0. ? 0. : x > 1. ? 1. :  x;
+}
+
+vec3 gradient(vec3 fc){
+
+    float blendx = 5. * fc.x + 0.2 * sin(86. * fc.y) + 0.16 * sin(66. * fc.x) ;
+
+    // blendx = 4. + 3.*sin(0.4*blendx);
+    vec3 rgb = 
+          mix( pal_c1, pal_c2, relu(blendx +0.01 ));
+    rgb = mix( rgb, pal_c3, relu( -1.3 + blendx  ));
+    rgb = mix( rgb, pal_c4, relu( -2. + blendx  ));
+    rgb = mix( rgb, pal_c5, relu( -3.1 + blendx  ));
+    rgb = mix( rgb, pal_c6, relu( -4.1 + blendx  ));
+    rgb = mix( rgb, pal_c7, relu( -5. + blendx  ));
+    return rgb;
+}
+
 float anim_mobius_th(){
-    return 0.011 + 0.049 * (2.0 + sin( u_time * mobius_th_spped) + sin( u_time * mobius_th_spped * 0.31498) );
+    return 0.011 + 0.049 * (2.0 + sin( u_time * mobius_th_speed) + sin( u_time * mobius_th_speed * 0.31498) );
 }
 
 float anim_sinesine(float min, float max, float speed){
@@ -76,6 +103,7 @@ float torus(vec3 p) {
   	return length(q) - TOR_V.y;
 }
 
+
 // iq's functions
 float sdBox( in vec3 p, in vec3 b ) {
 	vec3 d = abs(p) - b;
@@ -88,49 +116,53 @@ mat2 rot( in float a ) {
     return mat2(v, -v.y, v.x);
 }
 
-float mob(vec3 p){
-    
+float mobius(vec3 p){
+    p=p+0.0002*sin(p*290.0);
     // cylindrical coordinates
     vec2 cyl = vec2(length(p.xy), p.z);
     float theta = atan(p.x, p.y);
     vec2 inCyl = vec2(1., 0) - cyl;
     // rotate 180° to form the loop
-    float _rot = anim_sinesine(0., 8., 0.4);//2.0
+    float _rot = anim_sinesine(0., 2., 1.1);//2.0
     inCyl *= rot(theta * 1.5 - _rot);
     // coordinates in a torus (cylindrical coordinates + position on the stripe)
     vec3 inTor = vec3(inCyl, theta * RADIUS);
     
     // add the band
-    float th = anim_sinesine(0.01, 0.25, 4.);
+    float th = anim_sinesine(0.02, 0.18, 4.);
     float bandDist = sdBox(inTor, vec3(th, 0.5, 100)) - 0.0001;
     float d = bandDist;
 
     return d;
 }
 
- 
 
 float map(vec3 p){
+    
     float z_wrap = anim_sinesine(0.2, 4., 1.31);
-    vec3 rep  =  vec3( 
-        sin(1.25 * p.xy), 
-        .1 + (  sin(0.95 *  p.z) + z_wrap * sin(0.2 *  p.x)   ) );
+
+     vec3 rep  = p;//vec3( p.x % 3, p.y % 3,   p.z);//
+    // vec3 rep  =  vec3( 
+    //     sin(1.25 * p.xy), 
+    //     .1 + (  sin(0.95 *  p.z) + z_wrap * sin(0.2 *  p.x)   ) );
 
     float tor = torus(rep);
-    float mob = mob(rep);
-  
-     
-    float dis = 0.0; //displacement(p);
-    float smoot = anim_sinesine(0.001, .2, 3.31);//2.0
-    return dis + opSmoothSubtraction(mob, tor, smoot  );//opSubtraction (  tor , mob) ;
+    float mobius = mobius(rep);
+    
+    // float d = mobius(p);
+    // d=-0.35*sin(d*3.);
+    // float dis = 0.0;//displacement(p);
+    float smoothh = anim_sinesine(0.001, .1, 3.31); //2.0
+    return  opSmoothSubtraction( mobius, tor, smoothh  ); //opSubtraction (  tor , mob) ;
+
+
+    // return mobius;
 }
 
-
-// Cheap shadows are hard. In fact, I'd almost say, shadowing repeat objects - in a setting like this - with limited 
-// iterations is impossible... However, I'd be very grateful if someone could prove me wrong. :)
+// non-Cheap shadows 
 float softShadow(vec3 ro, vec3 lp, float k){
 
-    // More would be nicer. More is always nicer, but not really affordable... Not on my slow test machine, anyway.
+    
     const int maxIterationsShad = SHAD_STEPS; 
     
     vec3 rd = lp - ro; // Unnormalized direction ray.
@@ -141,7 +173,7 @@ float softShadow(vec3 ro, vec3 lp, float k){
     float stepDist = end/float(maxIterationsShad);
     
     rd /= end;
-// glslViewer glsl_torus/torus.frag -w 1280 -h 1280 --headless -o test.png
+ 
     // Max shadow iterations - More iterations make nicer shadows, but slow things down. Obviously, the lowest 
     // number to give a decent shadow is the best one to choose. 
     for (int i = 0; i<maxIterationsShad; i++){
@@ -179,7 +211,7 @@ float traceRef(vec3 ro, vec3 rd){
     for (int i = 0; i < 48; i++){
 
         d = map(ro + rd*t);        
-        if(abs(d)<EPS || t>FAR) break;        
+        if(abs(d)<.002 || t>FAR) break;        
         t += d;
     }
     
@@ -191,11 +223,6 @@ vec3 getNormal(in vec3 p) {
 	const vec2 e = vec2(.001, 0);
 	return normalize(vec3(map(p + e.xyy) - map(p - e.xyy), map(p + e.yxy) - map(p - e.yxy),	map(p + e.yyx) - map(p - e.yyx)));
 }
-
-float circleshape(vec2 position, float radius){
-	return step(radius, length(position - vec2(0.5)));
-}
-
 
 
 mat3 rotY(float ang) {
@@ -209,20 +236,11 @@ mat3 rotX(float ang) {
 }
 
  
-
-// float animCurve(in float t) {
-// 	t = mod(u_time, 15.0);
-// 	float f1 = smoothstep(5.0, 7.0, t);
-// 	float f2 = 1.0-smoothstep(7.0, 9.0, t);
-// 	return 0.01+0.09*f1*f2;
-// }
-
-
-
+ 
 
 // Standard raymarching routine.
 float trace(vec3 ro, vec3 rd){   
-    float t = 1., d;    
+    float t = 0., d;    
     
     for (int i = 0; i < STEPS; i++){
 
@@ -237,37 +255,39 @@ float trace(vec3 ro, vec3 rd){
 }
 
 vec3 getObjectColor(vec3 p){   
-    return vec3( cos(p.z*13.) + 1.0,  1.3 * torus( sin( p * 3.)),  sin(p.z*12.) + 1.0 );    
+    
+    return gradient( 0.5 +  sin(3.* p * rotY(0.5))*0.5 );
+    // return vec3( cos(p.z*13.) + 1.0,  1.3 * torus( sin( p * 3.)),  sin(p.z*12.) + 1.0 );    
 }
 
 vec3  doColor(in vec3 sp, in vec3 rd, in vec3 sn, in vec3 lp, float t){
     vec3 ld = lp-sp; // Light direction vector.
-    float lDist = max(length(ld), EPS); // Light to surface distance.
+    float lDist = max(length(ld), .001); // Light to surface distance.
     ld /= lDist; // Normalizing the light vector.
     
     // Attenuating the light, based on distance.
     float atten = 1. / (1. + lDist*.2 + lDist*lDist*.1);
     
     // Standard diffuse term.
-    float diff = 0.2 * max(dot(sn, ld), 0.);
+    float diff = max(dot(sn, ld), 0.);
 
     // Standard specualr term.
     float spec = pow(max( dot( reflect(-ld, sn), -rd ), 0.), 8.);
     
     // Coloring the object. You could set it to a single color, to
     // make things simpler, if you wanted.
-    vec3 objCol = getObjectColor(sp);
+    vec3 objCol = getObjectColor(sn);
     
     // Combining the above terms to produce the final scene color.
     vec3 sceneCol = (objCol*(diff + .15) + vec3(1., .6, .2)*spec*2.) * atten;
     
     
     // Fog factor -- based on the distance from the camera.
-    float fogF = smoothstep(0., 0.95, t/12.);
+    float fogF = smoothstep(0., 0.95, t/FAR);
     //
     // Applying the background fog. Just black, in this case, but you could
     // render sky, etc, as well.
-    sceneCol = mix(sceneCol, vec3(0., .1 + .1* sin (.2 * sp.y) , .4 + .3* sin (12.* rd.x) ), fogF); 
+    sceneCol = mix(sceneCol, vec3(0), fogF); 
 
     
     // Return the color. Performed once every pass... of which there are
@@ -281,13 +301,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 	vec2 uv = -1.0+2.0*fc;
 	uv.x *= u_resolution.x/u_resolution.y;	
 	
-	vec2 mouse = 0.5 * TAU * (-1.0 + 2.0 * u_mouse.xy/u_resolution.xy);
-	
-	// #ifndef HOMOTOPY
-	// 	float b = 0.015;
-	// #else
-	// 	float b = animCurve(u_time);
-	// #endif
+	vec2 mouse = 0.5*TAU*(-1.0+2.0*u_mouse.xy/u_resolution.xy);
+ 
 	
 	#ifdef ROTATION
 		mouse.x += 0.3*u_time;
@@ -326,13 +341,13 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     // See "traceRef" below.
     vec3 sceneColor = doColor(ro, rd, sn, lp, t);
 
+    float sh = 0.01;
     
-    #ifdef SHADOWS
-       float sh = softShadow(ro +  sn*.0015, lp, 16.);
-    #else
-        float sh = 0.01;
+    #ifdef HD
+        sh = 0.1;
+        // sh = softShadow(ro +  sn*.0015, lp, 16.);
     #endif
-
+    
     // SECOND PASS - REFLECTED RAY
     
     // Standard reflected ray, which is just a reflection of the unit
@@ -365,16 +380,13 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
     // Clamping the scene color, performing some rough gamma correction (the "sqrt" bit), then 
     // presenting it to the screen.
-    sceneColor=filmicToneMapping(0.7*sceneColor);
+    // sceneColor=filmicToneMapping(0.7*sceneColor);
 	fragColor =  vec4(clamp(sceneColor, 0., 1.), 1);
  
 }
-
-// void main() {        
-//   mainImage(gl_FragColor, gl_FragCoord.xy);
-// }
 
 
 void main(){
 	mainImage(TDColor, vUV.st*u_resolution.xy);
 }
+

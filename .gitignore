@@ -2,3 +2,5 @@
 *.class
 
 *.mov
+
+glsl_torus/Backup/**
