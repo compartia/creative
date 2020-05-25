@@ -1,33 +1,33 @@
 <style>
     body {
-        background: #101515;
+        background: #444444;
         padding: 0; 
         margin: 0;
     }
 
     #container {
         position: absolute;
+        width: 400px;
+        height: 400px;
+        z-index: 15;
         top: 50%;
         left: 50%;
-        transform: translate(-50%,-50%);
+        margin: -200px 0 0 -200px;
+        background: red;
     }​
  
 </style>
 
 <body>
-    <div id="container" ></div>
+    <div id="container"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
     <script id="vertexShader" type="x-shader/x-vertex">
         void main() {
-            gl_Position = vec4( position, 1.0 );
+            gl_Position = vec4( position, 0.5 );
         }
     </script>
     <script id="fragmentShader" type="x-shader/x-fragment">
  
-#ifdef GL_ES
-precision mediump float;
-#endif
-
 
 #define HD
 
@@ -74,8 +74,7 @@ float relu(float x){
 }
 
 vec3 gradient(vec3 fc){
-
-    // float blendx = 4. * fc.x + 0.1 * sin(4. * fc.z  + u_time * 15.) ;
+    
     float blendx = 4.5 * fc.x + 0.2 * sin(86. * fc.y  + u_time * 15.) + 0.16 * sin(66. * fc.x + u_time * 5.)  ;
 
     vec3 rgb = 
@@ -482,7 +481,9 @@ void main() {
             renderer = new THREE.WebGLRenderer();
             renderer.setPixelRatio( window.devicePixelRatio );
 
+            
             container.appendChild( renderer.domElement );
+            /* renderer.setSize(window.innerWidth * 0.8, window.innerHeight * 0.8); */
 
             onWindowResize();
             window.addEventListener( 'resize', onWindowResize, false );
@@ -494,7 +495,8 @@ void main() {
         }
 
         function onWindowResize( event ) {
-            renderer.setSize( window.innerWidth, window.innerHeight );
+            /* var container = document.getElementById( 'container' ); */
+            renderer.setSize( 400,400 );
             uniforms.u_resolution.value.x = renderer.domElement.width;
             uniforms.u_resolution.value.y = renderer.domElement.height;
         }
