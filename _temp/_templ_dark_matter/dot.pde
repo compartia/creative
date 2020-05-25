@@ -23,23 +23,9 @@ class Dot{
   }
   
   void draw (PGraphics g, float r){
-    //int x = (int)pos.x;
-    //println(x);
-    //int y = (int)pos.y;
-    //if (x<0)
-    //   x = width -( (-x) % width);
-    //else
-    //  x= x % width;
-      
-    // if (y<0)
-    //   y = height-( (-y) % height);
-    //else
-    //  y= y % height;
-     
+   
      
     g.ellipse( pos.x, pos.y, r, r);   
-    
-    
-    //pos.y=y;
+   
   }
 }

@@ -45,16 +45,9 @@ void makeDots(PVector c){
     dots[i].pos.x=c.x + randomGaussian()*0.001;
     dots[i].pos.y=c.y + randomGaussian()*0.001;
     
-    //if(randomGaussian()>0)
-    //  dots[i].pos . add(dots[i].speed.copy().mult(width*0.121));
-      
-    //if(randomGaussian()>0)
+ 
       dots[i].pos . add(dots[i].speed.copy().mult(0.01*randomGaussian()));
-      
-    //dots[i].pos . add(dots[i].speed.copy().mult(width * (i % (N/20))*0.02111));
-    //if(randomGaussian()>0)
-    //  dots[i].pos.x = width/4;
-   
+ 
   }
 }
 
