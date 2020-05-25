@@ -7,6 +7,7 @@
 // tonemapping from https://www.shadertoy.com/view/lslGzl
 layout (location = 0) out vec4 TDColor;
  
+ 
 
 #ifdef GL_ES
 precision highp float;
@@ -15,13 +16,12 @@ precision highp float;
 #define REFLECTIONS
 #define HD
  
-#define gamma 0.9
 #define FAR 6.
 #define TOR_V vec2(1.0, 0.393333)
 
 #ifdef HD
-    #define EPS 0.001
-    #define STEPS 260
+    #define EPS 0.00001
+    #define STEPS 2200
     #define SHAD_STEPS 20
 #else
     #define STEPS 60
@@ -41,13 +41,6 @@ uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
 
-// vec3 pal_c1 = vec3(1,48,95) / 255.;
-// vec3 pal_c2 = vec3(131,106,178) /255.;
-// vec3 pal_c3 = vec3(249,188,119) /255.;
-// vec3 pal_c4 = vec3(175,58,30) /255.;
-// vec3 pal_c5 = vec3(0,2,5) /255.;
-// vec3 pal_c6 = vec3(50,86,96) /255.;
-// vec3 pal_c7 = vec3(9,29,27) /255.;
 
 vec3 pal_c0 = vec3(0, 0, 0) / 255.;
 vec3 pal_c1 = vec3(43, 10, 111) / 255.;
@@ -132,6 +125,7 @@ float mobius(vec3 p){
     // cylindrical coordinates
     vec2 cyl = vec2(length(p.xy), p.z);
     float theta = atan(p.x, p.y);
+    
     vec2 inCyl = vec2(1., 0) - cyl;
     // rotate 180° to form the loop
     float _rot = 0.2;
@@ -150,23 +144,19 @@ float mobius(vec3 p){
 
 float map(vec3 p){
      
-    float z_wrap = anim_sinesine(0.2, 4., 1.31);
+    float c = 1.2;
+    p.z =   mod( p.z + 0.5 * c, c) - 0.5 * c ; //translational symmetry
+     
 
-     vec3 rep  = p;//vec3( p.x % 3, p.y % 3,   p.z);//
-    // vec3 rep  =  vec3( 
-    //     sin(1.25 * p.xy), 
-    //     .1 + (  sin(0.95 *  p.z) + z_wrap * sin(0.2 *  p.x)   ) );
-
-    float tor = torus(rep);
-    float mobius = mobius(rep);
-    
-    // float d = mobius(p);
-    // d=-0.35*sin(d*3.);
-    // float dis = 0.0;//displacement(p);
+   
+    float tor = torus(p);
+    float mobius = mobius(p);
+    float sphere = sdSphere(p, 0.23);
+     
      
     float spiral =  opSmoothSubtraction( mobius, tor, 0.18  ); //opSubtraction (  tor , mob) ;
 
-    float sphere = sdSphere(p, 0.43);
+    
     return opSmoothUnion (spiral, sphere, 0.266);
 
 
@@ -190,8 +180,8 @@ float traceRef(vec3 ro, vec3 rd){
     for (int i = 0; i < 50; i++){
 
         d = map(ro + rd*t);        
-        if(abs(d)<.002 || t>FAR) break;        
-        t += d* .99;
+        if( abs(d) < .002 || t > FAR ) break;        
+        t += d;
     }
     
     return t;
@@ -215,7 +205,6 @@ mat3 rotX(float ang) {
 }
 
  
- 
 
 // Standard raymarching routine.
 float trace(vec3 ro, vec3 rd){   
@@ -226,14 +215,14 @@ float trace(vec3 ro, vec3 rd){
         d = map(ro + rd*t);
         
         // Using the hacky "abs," trick, for more accuracy. 
-        if(abs(d)<.0001 || t> 1.2* FAR) break;                
-        t += d * .155;  // Using more accuracy, in the first pass.
+        if(abs(d)<.0001 || t> 2.* FAR) break;                
+        t += d * .175  ;  // Using more accuracy, in the first pass.
     }
     
     return t;
 }
 
-vec3 getObjectColor(vec3 p){       
+vec3 getObjectColor(vec3 p){          
     return gradient(0.5* sin(p.x*2. + 3.*p.y + 2. * u_time)+0.5); 
 }
 
@@ -287,36 +276,27 @@ vec3  doColor(in vec3 sp, in vec3 rd, in vec3 sn, in vec3 lp, float t, in vec2 f
     return sceneCol;
 }
 
-
-vec3 linearToneMapping(vec3 color)
-{
-	float exposure = 1.;
-	color = clamp(exposure * color, 0., 1.);
-	color = pow(color, vec3(1. / gamma));
-	return color;
-}
-
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
 	vec2 fc = fragCoord.xy / u_resolution.xy;
 	vec2 uv = -1.0+2.0*fc;
 	uv.x *= u_resolution.x/u_resolution.y;	
 	
-	vec2 mouse = 0.5*TAU*(-1.0+2.0*u_mouse.xy/u_resolution.xy);
+	vec2 mouse = 0.5 * TAU * (-1.0+2.0*u_mouse.xy/u_resolution.xy);
  
 	
 	#ifdef ROTATION
 		mouse.x += 0.3*u_time;
 	#endif
 	
-	mat3 m = rotY(mouse.x) * rotX(mouse.y);
+	mat3 m = rotY(mouse.x) * rotX(mouse.y + 19.);
 
     
     // Ray origin. 
     vec3 ro = m * vec3(0.0, 0.0, 1.6);
 
     // Light position. Set in the vicinity the ray origin.
-    vec3 lp = ro + vec3(0., 1., -.5);
+    vec3 lp = ro + vec3(0., 1.7, -.5);
     
     // Unit direction ray.
 	vec3 rd = m * normalize(vec3(uv, -1.0));
@@ -342,7 +322,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     // See "traceRef" below.
     vec3 sceneColor = doColor(ro, rd, sn, lp, t, fc);
 
-    float sh = 0.001;
+    float sh = 0.01;
   
     
     #ifdef REFLECTIONS
@@ -366,31 +346,26 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         
         // Advancing the ray origin, "ro," to the new reflected hit point.
         ro += rd*t;
-        // Retrieving the normal at the reflected hit point.
-        sn = getNormal(ro);
     #endif
     
-    
+    // Retrieving the normal at the reflected hit point.
+    sn = getNormal(ro);
 
     // Coloring the reflected hit point, then adding a portion of it to the final scene color.
     // How much you add, and how you apply it is up to you, but I'm simply adding 35 percent.
     
-    sceneColor += doColor(ro, rd, sn, lp, t, fc) * 0.3 ;
+    sceneColor += doColor(ro, rd, sn, lp, t, fc) * 0.35 + 0.1 * sh;
     // Other combinations... depending what you're trying to achieve.
     // sceneColor = sceneColor ;//+ doColor(ro, rd, sn, lp, t)*.5;
 
     // Clamping the scene color, performing some rough gamma correction (the "sqrt" bit), then 
     // presenting it to the screen.
-    sceneColor=linearToneMapping(0.9*sceneColor);
+    // sceneColor=filmicToneMapping(0.7*sceneColor);
 	fragColor =  vec4(clamp(sceneColor, 0., 1.), 1.);
  
 }
 
- 
-// void main() {        
-//   mainImage(gl_FragColor, gl_FragCoord.xy);
-// }
-
+  
 
 void main(){
 	mainImage(TDColor, vUV.st*u_resolution.xy);

@@ -32,13 +32,6 @@ uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
 
-// vec3 pal_c1 = vec3(1,48,95) / 255.;
-// vec3 pal_c2 = vec3(131,106,178) /255.;
-// vec3 pal_c3 = vec3(249,188,119) /255.;
-// vec3 pal_c4 = vec3(175,58,30) /255.;
-// vec3 pal_c5 = vec3(0,2,5) /255.;
-// vec3 pal_c6 = vec3(50,86,96) /255.;
-// vec3 pal_c7 = vec3(9,29,27) /255.;
 
 vec3 pal_c0 = vec3(0, 0, 0) / 255.;
 vec3 pal_c1 = vec3(43, 10, 111) / 255.;
