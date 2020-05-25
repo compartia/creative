@@ -464,6 +464,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
     // Clamping the scene color, performing some rough gamma correction (the 'sqrt' bit), then 
     // presenting it to the screen.
+    sceneColor=RomBinDaHouseToneMapping(0.6*sceneColor);
 	fragColor =   vec4(clamp(sceneColor, 0., 1.), 1);
     
 }
