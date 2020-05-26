@@ -1,25 +1,36 @@
-
+ 
 # Snowcode
 
-The aim of this project is to build an aesthetically attractive graphical data coding system similar in a way to QR-codes.
+The aim of this project is to build an aesthetically attractive 
+graphical data coding system similar in a way to QR-codes.
 
 ![Grid](grid.png)
 
 
 
-## Idea
+## Encoding, the idea
 
 Data is converted to hexadecimal representation, so we have 6 digits. 
-Graphically, a digit is encoded in one of 6 colors and / or as a combination of 3 different rotations X two colors.
+Graphically, a digit is encoded in one of 6 colours and / or as a combination of 3 different rotations X two colors.
 
 ![Legend](order.png)
 
 The triangular segment of the hexagonal grid was selected as the structure for placing the digits.
 
-Triangles (or sectors) are organized by rotation and reflection into a hexagonal structure, similar to a snowflake.
-Thus, the data is duplicated 12 times. This level of redundancy minimizes the error rate of a recognition system.
+Triangles (or sectors) are organised by rotation and reflection into a hexagonal structure, similar to a snowflake.
+Thus, the data is duplicated 12 times. This level of redundancy minimises the error rate of a recognition system.
+
+### .js implementation 
+Please find .js implementation here: [paperjs_impl](https://compartia.github.io/creative/snowflakes/paperjs_impl)  
+
+made with [paper.js](http://paperjs.org/)
+
+### .java implementation 
+[github.com/compartia/creative/tree/master/snowflakes/processing.org/](//github.com/compartia/creative/tree/master/snowflakes/processing.org/snowflakes)  
+
+Made with [processing.org](http://processing.org/)
  
-## Recognision
+## Decoding, or recognition
 
 We've created the Tensoflow / Keras ML model on top of EfficientNet to test the theoretical possibility of data recovery using a neural network (POC).
 
@@ -44,10 +55,12 @@ For details, have a look at this Colab Notebook:
 
 ![Some results](training_results.png)
 
-## More samples
+# Appendix 1: More samples
 
 ![Sample](sample3.png)
 
 ![Sample](sample1.png)
 
 ![Sample](grid2.png)
+
+ 
