@@ -18,7 +18,7 @@ See it animated: [https://www.instagram.com/p/B7VBaqdFolx](https://www.instagram
 
  
 ### Texts 
-[details..](/opart_19_poem)
+[details..](https://github.com/compartia/creative/tree/master/opart_19_poem)
 
 ![Sample](opart_19_poem/sample__0023.png)
 
