@@ -10,7 +10,7 @@ graphical data coding system similar in a way to QR-codes [More details->...](/s
 
 
 ### 2 prizmis 
-[details..](/prizms)
+[details..](https://github.com/compartia/creative/tree/master/prizms)
 
 ![Sample](prizms/pink_floyd__0034.png)
 
@@ -18,7 +18,7 @@ See it animated: [https://www.instagram.com/p/B7VBaqdFolx](https://www.instagram
 
  
 ### Texts 
-[details..](/opart_19_poem)
+[details..](https://github.com/compartia/creative/tree/master/opart_19_poem)
 
 ![Sample](opart_19_poem/sample__0023.png)
 
