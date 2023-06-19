@@ -1,50 +1,47 @@
 
+# TODO: fit txt inti screen:
+# TODO: add repulsion forces
 
-"""
- * List of objects
- * based on ArrayListClass Daniel Shiffman.
- *
- * This example demonstrates how to use a Python list to store
- * a variable number of objects.    Items can be added and removed
- * from the list.
- *
- * Click the mouse to add bouncing balls.
-"""
 
+# poem_t = u'''
+#  секретные мысли, согретые в прядях,
+# все найдено, но не кончат выискивать
+# пальцы выводят из точек родимых
+# созвездия, а из них - предсказания
+# в белом, в ознобе, поверхность — текст Брайля, 
+# прочитан губами, стократно
+# пальцы сквозь мускул, сквозь ребра
+# в самое пекло укус, 
+# к источнику влаги, 
+# к дракону, к ядру, 
+# к генератору ритма, такта 
+# выдохов форте, синхронных
+# фортиссимо, пульс общий престиссимо, 
+# обратный отсчет, 
+# скула — в скулу 
+# и -- до хруста, синус, тангейзер, касание, 
+# рык, клык, в мягкую мочку — 
+# дыханием рваным 
+# губы хватать, улавливать
+# обертона и трястись. 
+# Как тогда. 
+# Легче покинуть тело,
+# Чем с этого слезть.
+# мы больны 
+# тяжело весьма больны
+# нами. 
+# ''' 
 
 poem_t = u'''
  секретные мысли, согретые в прядях,
 все найдено, но не кончат выискивать
 пальцы выводят из точек родимых
-созвездия, а из них - предсказания
-в белом, в ознобе, поверхность — текст Брайля, 
-прочитан губами, стократно
-пальцы сквозь мускул, сквозь ребра
-в самое пекло укус, 
-к источнику влаги, 
-к дракону, к ядру, 
-к генератору ритма, такта 
-выдохов форте, синхронных
-фортиссимо, пульс общий престиссимо, 
-обратный отсчет, 
-скула — в скулу 
-и -- до хруста, синус, тангейзер, касание, 
-рык, клык, в мягкую мочку — 
-дыханием рваным 
-губы хватать, улавливать
-обертона и трястись. 
-Как тогда. 
-Легче покинуть тело,
-Чем с этого слезть.
-мы больны 
-тяжело весьма больны
-нами. 
-''' 
+созвездия, а из них - предсказания''' 
 
-# poem_t = u'■□▢▲△▼▽◆○●Δʊ'
+
 SAVE_IMAGES=False
 
-subframes = 1
+subframes = 1 #for motion blur, the more the soother
 
 letters = None
 glyphs =None
@@ -147,6 +144,19 @@ class Glyph:
         self.target = t
 
     def animate(self):
+        global glyphs
+        
+        if self.target is None:
+            for g in glyphs:
+                if g !=self:
+                    _dir = PVector.sub(g.pos, self.pos)
+                    _distSq = _dir.magSq()
+                    _dir.normalize()
+                    _dir.div(_distSq+0.001)
+                    # _dir.mult(0.001)
+                    self.speed.add(_dir)
+                    # print(_dir)
+                    
         if self.target is not None:
             dspeed = PVector.sub(self.target.pos, self.pos).mult(0.02)
             dist = self.pos.dist(self.target.pos)
@@ -154,20 +164,23 @@ class Glyph:
                 dspeed.setMag(20)
 
             self.speed.add(dspeed)
-            self.deg += dist
+            # self.deg += self.pos.x
 
             if dist < 0.4:
                 self.stillFrames += 1
             else:
                 self.stillFrames = 0
+                
+                
+            
         else:
             self.stillFrames -= 1
             rnd = 1.0
-            self.speed.x += randomGaussian() * rnd
-            self.speed.y += randomGaussian() * rnd
+            # self.speed.x += randomGaussian() * rnd
+            # self.speed.y += randomGaussian() * rnd
 
-        self.deg *= 0.575
-        self.speed.mult(0.72)
+        self.deg *= 0.991575
+        self.speed.mult(0.872)
         self.pos = self.pos.add(self.speed)
 
     def canReuse(self):
@@ -230,6 +243,7 @@ def makeLetters(poem):
     for g in glyphs:
         # print('makeLetters 3.1', g)
         g.pos = PVector(maxX * randomGaussian(), maxY * abs(randomGaussian()))
+        g.deg = randomGaussian()*300.0
 
     # print('makeLetters 4', maxX, maxY)
     return PVector(maxX, maxY)
@@ -285,9 +299,19 @@ def findFreeGlyph(l, glyphs):
 
 
 
+last_y_translation =0
+ 
 def drawPoem():
-    # print('drawPoem 0')
+    global last_y_translation
     global glyphs, letters, current_frame, currentLetter
+    pushMatrix()
+    
+    new_y_translation = lerp(last_y_translation,  -letters[currentLetter].pos.y + height/2, 0.005)
+    
+    translate(0, new_y_translation)
+    last_y_translation = new_y_translation
+    # print('drawPoem 0')
+    
     for g in glyphs:
         g.draw()         
     # print('drawPoem 0.1')
@@ -303,17 +327,9 @@ def drawPoem():
             cg.setNewTarget(cl)
             # print('drawPoem 3', cg.c)
             currentLetter = (currentLetter + 1) % len(letters)
-            # print('drawPoem 4', cg.c)
-    # if (frameCount % 3 == 0) {
-    #     Letter cl = letters[currentLetter];
-    #     Glyph cg = findFreeGlyph(cl);
-    #     if (cg != null) {
-    #         cg.setNewTarget(cl);
-    #         currentLetter = (currentLetter + 1) % letters.length;
-    #     }
-    # }
+             
 
-
+    popMatrix()
 
 
 def draw():
@@ -335,64 +351,4 @@ def draw():
     #     saveFrame("poem_####.png")
 
 
-
-# # -----------------
-# balls = []
-# ballWidth = 48
-
-# # Simple bouncing ball class
-
-# class Ball:
-#     def __init__(self, tempX, tempY, tempW):
-#         self.x = tempX
-#         self.y = tempY
-#         self.w = tempW
-#         self.speed = 0
-#         self.gravity = 0.1
-#         self.life = 255
-
-#     def move(self):
-#         # Add gravity to speed
-#         self.speed = self.speed + self.gravity
-#         # Add speed to y location
-#         self.y = self.y + self.speed
-#         # If square reaches the bottom
-#         # Reverse speed
-#         if self.y > height:
-#             # Dampening
-#             self.speed = self.speed * -0.8
-#             self.y = height
-
-#         self.life -= 1
-
-#     def finished(self):
-#         # Balls fade out
-#         return self.life < 0
-
-#     def display(self):
-#         # Display the circle
-#         fill(0, self.life)
-#         #stroke(0,life)
-#         ellipse(self.x, self.y, self.w, self.w)
-
-# def setup():
-#     size(1200, 1200)
-#     smooth()
-#     noStroke()
-
-#     # Start by adding one element
-#     balls.append(Ball(width / 2, 0, ballWidth))
-
-# def draw():
-#     background(255)
-
-#     # Count down backwards from the end of the list
-#     for ball in reversed(balls):
-#         ball.move()
-#         ball.display()
-#         if ball.finished():
-#             balls.remove(ball)
-
-# def mousePressed():
-#     # A new ball object is added to the list (by default to the end)
-#     balls.append(Ball(mouseX, mouseY, ballWidth))
+ 
