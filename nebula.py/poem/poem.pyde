@@ -2,6 +2,9 @@
 # TODO: fit txt inti screen:
 # TODO: add repulsion forces
 
+ 
+
+
 DEBUG = False
 SAVE_IMAGES=False #save each frame to /render folder
 subframes = 2 #for motion blur, the more the smoother motion
@@ -9,16 +12,35 @@ screeen_size_divider = 4
 
 minFramesStill = 70 #number of frames a glyph sits in its target pos
 
-poem_t = u'''
-секретные мысли, 
-согретые в прядях,
-все найдено, но 
-не кончат выискивать пальцы 
-выводят 
-из точек родимых созвездия, 
+poem_short = u'''
+се
+кре
+тные мы
+сли, 
+со
+гре
+тые в пр
+ядях,
+все н
+айде
+но, но 
+не ко
+нчат в
+ыи
+ск
+ивать па
+льцы 
+вывод
+ят 
+из точ
+ек род
+им
+ых созв
+ез
+дия, 
 ''' 
 
-poem_t_whole = u'''
+poem_whole = u'''
 секретные мысли, 
 согретые в прядях,
 все найдено, но 
@@ -70,16 +92,17 @@ poem_t_whole = u'''
 # ''' 
 
 
+poem_t = poem_whole
 
-
-letters = None
-glyphs =None
+letters = []
+glyphs = []
+bbox = None
 
 lineHeight = 1.62
  
  
 poem=None
-bbox=PVector ()
+
 text_size = 15
 
 f=PFont()
@@ -92,25 +115,19 @@ current_frame = 0
 number_of_lines = 0
 
 
-
-
+#-------------------------
 class Letter:
     def __init__(self, c):
         self.pos = PVector()
         self.c = c
-
-    def animate(self):
-        pass
-
-
-
+#-------------------------
 class Glyph:
     def __init__(self, c):
         
         # super().__init__(c)
         
         self.c = c
-        self.last_c = None
+        self.last_glyph = None
         
         self.pos = PVector()
         self.stillFrames = 0
@@ -122,8 +139,7 @@ class Glyph:
         self.repulsion = PVector()
         
         
-         
-
+    
     def draw(self):
         # print('g draw 1', self.pos)
         lastpos = self.pos.copy()
@@ -202,8 +218,8 @@ class Glyph:
                         self.repulsion.add(_dir)
                     
                     if _dist > text_size*1.4:
-                        if self.c == g.last_c:
-                            _dir.mult(2.7)
+                        if self == g.last_glyph:
+                            _dir.mult(20.7)
                             self.repulsion.sub(_dir)
                     
                     
@@ -260,13 +276,68 @@ class Glyph:
 
 
 
+#------------------------------------------------------------------------------------------------
+def makeLetters(poem):
+    
+    print('makeLetters 1', len(poem), textWidth )
+            
+    letters = [None] * len(poem)    
+    glyphs = [] #[None] * len(poem)
+    
+    x = 0.0
+    y = 0.0
 
+    maxX = 0.0
+    maxY = 0.0
+    
+    last_glyph = None
+    
+    print('makeLetters 2', len(poem), textWidth )
+    for i in range(len(poem)): 
+         
+        _char = poem[i]
+        w = textWidth(_char)
+
+        letters[i] = Letter(_char)
+        letters[i].pos = PVector(x, y)
+        # print('makeLetters 3', len(poem), textWidth )
+                    
+        if not (_char == ' ' or _char== '\n'):
+            _g = Glyph(_char) 
+            _g.pos = letters[i].pos.copy()
+            _g.last_glyph = last_glyph
+            
+            glyphs.append(_g)
+            last_glyph = _g
+    
+        if x > maxX:
+            maxX = x           
+        if y > maxY:
+            maxY = y
+            
+        x = x+w
+         
+        if _char == '\n':            
+            y = y + (lineHeight * text_size) 
+            x = 0.0
+        
+            
+    print('makeLetters 4', len(glyphs), len(letters) )
+           
+    # Randomizing initial positions
+    for g in glyphs:
+        # print('makeLetters 3.1', g)
+        g.pos = PVector(maxX * randomGaussian(), maxY * abs(randomGaussian()))
+        # g.deg = randomGaussian()*300.0
+
+    print('makeLetters bbox:', maxX, maxY)
+    return letters, glyphs, PVector(maxX, maxY)
 
 
 
 def setup():
 
-    global poem, bbox, text_size, f, number_of_lines
+    global poem, bbox, text_size, f, number_of_lines, letters, glyphs
 
     print(2)
     # with open("poem_1.txt", 'r+') as file:
@@ -292,7 +363,7 @@ def setup():
     frameRate(30)
     smooth(4)
     
-    print('setup 3')
+    
     
     text_size = height // 45
     f = createFont("Literata-VariableFont_wght.ttf", text_size, True)
@@ -301,9 +372,12 @@ def setup():
     textFont(f, text_size)
     textSize(text_size)
     
+    print('setup 3')
+    print(makeLetters)
     
-    bbox = makeLetters(poem)
-    print('setup 5')
+    letters, glyphs, bbox = makeLetters(poem)
+    
+    print('setup 5',  len(letters), len(glyphs), bbox)
 
 
 def findFreeGlyph(l, glyphs):
@@ -322,21 +396,28 @@ def findFreeGlyph(l, glyphs):
 last_y_translation =0
  
 def drawPoem():
+    
     global last_y_translation
     global glyphs, letters, current_frame, currentLetter
+    
+    if DEBUG:
+        print('drawPoem 1', currentLetter, len(letters))
+   
     pushMatrix()
     
-    new_y_translation = lerp(last_y_translation,  -letters[currentLetter].pos.y + height/2, 0.005)
+    new_y_translation = lerp(last_y_translation,  -letters[currentLetter].pos.y + height/3, 0.005)
     
-    # translate(0, new_y_translation)
+    translate(0, new_y_translation)
     last_y_translation = new_y_translation
-    
+
+    if DEBUG:
+        print('drawPoem 1.1')
     
     for g in glyphs:
         g.draw()         
     
-
-    if current_frame % 2 == 0:        
+    
+    if current_frame % 2 == 0 and current_frame > 100:        
         cl = letters[currentLetter] 
         currentLetter = (currentLetter + 1) % len(letters)
               
@@ -347,7 +428,7 @@ def drawPoem():
 
 
     popMatrix()
-
+    print('drawPoem 2')
 
 def draw():
     global current_frame
@@ -355,8 +436,12 @@ def draw():
     # print('draw 1')
     # Arrays.sort(glyphs, aGComparator);
     # glyphs = sorted(glyphs, lambda: g1, g2 : g1.c > g2.c))
-    translate((width - bbox.x) / 2, (height - bbox.y) / 2) # ceter text on screen
-    # print('draw 2')
+    pushMatrix()
+    translate((width - bbox.x) / 2, 0) # center text on screen
+    
+    
+    # translate((width - bbox.x) / 2, (height - bbox.y) / 2) # center text on screen
+     
     background(0)
     # print('draw 3')
     fill(255, 140)
@@ -366,6 +451,6 @@ def draw():
 
     if frameCount < 3000 and SAVE_IMAGES:
         saveFrame("render/poem_####.png")
-
+    popMatrix()
 
  
