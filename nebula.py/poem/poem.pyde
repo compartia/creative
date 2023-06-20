@@ -3,10 +3,22 @@
 # TODO: add repulsion forces
 
 DEBUG = False
-SAVE_IMAGES=True
-subframes = 15 #for motion blur, the more the soother
+SAVE_IMAGES=False #save each frame to /render folder
+subframes = 2 #for motion blur, the more the smoother motion
+screeen_size_divider = 4
+
+minFramesStill = 70 #number of frames a glyph sits in its target pos
 
 poem_t = u'''
+секретные мысли, 
+согретые в прядях,
+все найдено, но 
+не кончат выискивать пальцы 
+выводят 
+из точек родимых созвездия, 
+''' 
+
+poem_t_whole = u'''
 секретные мысли, 
 согретые в прядях,
 все найдено, но 
@@ -16,24 +28,28 @@ poem_t = u'''
 в белом, в ознобе, 
 поверхность — текст Брайля, 
 прочитан губами, стократно
-пальцы сквозь мускул, сквозь ребра
+пальцы сквозь мускул, 
+сквозь ребра
 в самое пекло укус, 
 к источнику влаги, 
 к дракону, к ядру, 
-к генератору ритма, такта 
+к генератору ритма, 
+частоты тактовой, 
 выдохов форте, синхронных
-фортиссимо, пульс общий престиссимо, 
+фортиссимо, пульс общий 
+престиссимо, 
 обратный отсчет, 
 скула — в скулу 
-и -- до хруста, синус, тангейзер, касание, 
-рык, клык, в мягкую мочку — 
+и — до хруста, синус, 
+тангейзер, касание, 
+рык, клык, в мягкую мочку, 
 дыханием рваным 
 губы хватать, улавливать
-обертона и трястись. 
-Как тогда. 
+обертона и трястись,
+как тогда. 
 Легче покинуть тело,
 Чем с этого слезть.
-мы больны 
+Мы больны 
 тяжело весьма больны
 нами. 
 ''' 
@@ -56,9 +72,6 @@ poem_t = u'''
 
 
 
-
-screeen_size_divider = 2
-
 letters = None
 glyphs =None
 
@@ -67,7 +80,7 @@ lineHeight = 1.62
  
 poem=None
 bbox=PVector ()
-text_size = 17
+text_size = 15
 
 f=PFont()
   
@@ -77,19 +90,10 @@ f=PFont()
 currentLetter = 0
 current_frame = 0
 number_of_lines = 0
-minFramesStill = 70
 
 
 
 
-
-class Keyframe:
-    def __init__(self):
-        self.pos = PVector()
-        self.degree = 0.0
-        self.scale = 1.0
-        
-        
 class Letter:
     def __init__(self, c):
         self.pos = PVector()
@@ -100,16 +104,14 @@ class Letter:
 
 
 
-
-
-def animateFromTo(k1, k2, length):
-    pass
-
-
 class Glyph:
     def __init__(self, c):
-        self.c=c
+        
         # super().__init__(c)
+        
+        self.c = c
+        self.last_c = None
+        
         self.pos = PVector()
         self.stillFrames = 0
         self.target = None
@@ -118,6 +120,8 @@ class Glyph:
          
         self.speed = PVector()
         self.repulsion = PVector()
+        
+        
          
 
     def draw(self):
@@ -177,29 +181,30 @@ class Glyph:
         self.target = t
 
     def animate(self):         
-        global glyphs
+        global glyphs, text_size
 
         # repulsion ----------------------------
         self.repulsion = PVector(0,0)
         for g in glyphs:
             if g !=self:
                 _dir = PVector.sub( self.pos, g.pos)
-                _distSq = _dir.magSq()
+                # _distSq = _dir.magSq()
                 _dist = _dir.mag()
-                
-                
-                if _dist < 300:
+                                
+                if _dist > 0.5:
                     _dir.normalize()
-                    if _distSq < 1:
-                        _distSq = 1
-                    
-                    # if g.c == self.c:
-                    #     _distSq = _distSq * -1
-                    #     _dist*=-1
+                    if _dist < 1.0:
+                        _dist = 1.0
                         
-                    _dir.div(0.1*_dist + 0.001)
-                    if g.c != self.c:
+                    _dir.mult(0.03)                     
+                    
+                    if _dist < width/2:
                         self.repulsion.add(_dir)
+                    
+                    if _dist > text_size*1.4:
+                        if self.c == g.last_c:
+                            _dir.mult(2.7)
+                            self.repulsion.sub(_dir)
                     
                     
             # print(_dir)
@@ -240,7 +245,11 @@ class Glyph:
             self.deg += _deg_inc
         
         self.deg *= 0.7575
-        self.speed.mult(0.72)
+        if self.c in [u"а", u"о",u"у",u"е",u"ю"]:
+            self.speed.mult(0.8)
+        else:
+            self.speed.mult(0.8)
+            
         self.pos = self.pos.add(self.speed)
         
         if self.stillFrames > minFramesStill*1.2:
@@ -251,61 +260,7 @@ class Glyph:
 
 
 
-def makeLetters(poem):
-    global letters, glyphs
-    print('makeLetters 1', len(poem) )
-            
-    letters = [None] * len(poem)
-    # print('makeLetters 1.0', len(poem) ) 
-    # print('makeLetters 1.1', len(poem), len(letters))
-    glyphs = [] #[None] * len(poem)
-    # print('makeLetters 1.2', len(poem), len(glyphs))
-    x = 0.0
-    y = 0.0
 
-    maxX = 0.0
-    maxY = 0.0
-    
-    print('makeLetters 2', x)
-
-    for i in range(len(poem)):        
-        _char = poem[i]
-        w = textWidth(_char)
-        # print('makeLetters 2.1', w)
-        letters[i] = Letter(_char)
-        
-        letters[i].pos = PVector(x, y)
-
-
-        _g = Glyph(_char) 
-        _g.pos = letters[i].pos.copy()
-        
-            
-        if not (_char == ' ' or _char== '\n'):
-            glyphs.append(_g)
-           
-    
-
-        if x > maxX:
-            maxX = x           
-        if y > maxY:
-            maxY = y
-                         
-        x = x+w
- 
-        
-        if _char == '\n':            
-            y = y + (lineHeight * text_size) 
-            x = 0.0
-            
-    # Randomizing initial positions
-    for g in glyphs:
-        # print('makeLetters 3.1', g)
-        g.pos = PVector(maxX * randomGaussian(), maxY * abs(randomGaussian()))
-        # g.deg = randomGaussian()*300.0
-
-    print('makeLetters 4', maxX, maxY)
-    return PVector(maxX, maxY)
 
 
 
@@ -339,7 +294,7 @@ def setup():
     
     print('setup 3')
     
-    text_size = height // 40
+    text_size = height // 45
     f = createFont("Literata-VariableFont_wght.ttf", text_size, True)
     print(f)
 
