@@ -7,3 +7,6 @@ glsl_torus/Backup/**
 *.DS_Store
 
 torus-clock/Backup/**
+render
+render ?/
+render_0_complete
