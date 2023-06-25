@@ -78,7 +78,7 @@ if DEV_MODE:
     poem_t = poem_prod[0:100]
 
 poem = None
-print('begin', poem_t)
+
 #-------------------------
 class Letter:
     def __init__(self, c):
@@ -105,13 +105,9 @@ class Glyph:
         
     
     def draw(self):
-        # print('g draw 1', self.pos)
         lastpos = self.pos.copy()
-        # print('g draw 1.1', lastpos)
         lastdeg = self.deg
-        # print('g draw 1.2')
         self.animate()
-        # print('g draw 2')
         
         fill(230, 255//subframes)
         if DEBUG:
@@ -121,7 +117,7 @@ class Glyph:
                 fill(255, 255//subframes)
                             
         blendMode(ADD)
-        if DEBUG:
+        if DEBUG: #render repulsion vector for debugging
             pushMatrix()
             translate(self.pos.x , self.pos.y  )
             stroke(255,0,0)
@@ -228,8 +224,6 @@ class Glyph:
 
 #------------------------------------------------------------------------------------------------
 def makeLetters(poem):
-    
-    print('makeLetters 1', len(poem), textWidth )
             
     letters = [None] * len(poem)    
     glyphs = [] #[None] * len(poem)
@@ -242,7 +236,7 @@ def makeLetters(poem):
     
     last_glyph = None
     
-    print('makeLetters 2', len(poem), textWidth )
+     
     for i in range(len(poem)): 
          
         _char = poem[i]
@@ -250,7 +244,7 @@ def makeLetters(poem):
 
         letters[i] = Letter(_char)
         letters[i].pos = PVector(x, y)
-        # print('makeLetters 3', len(poem), textWidth )
+         
                     
         if not (_char == ' ' or _char== '\n'):
             _g = Glyph(_char) 
@@ -270,31 +264,24 @@ def makeLetters(poem):
         if _char == '\n':            
             y = y + (lineHeight * text_size) 
             x = 0.0
-        
-            
-    print('makeLetters 4', len(glyphs), len(letters) )
+                
            
     # Randomizing initial positions
-    for g in glyphs:
-        # print('makeLetters 3.1', g)
+    for g in glyphs:         
         g.pos = PVector(maxX * randomGaussian(), maxY * abs(randomGaussian()))
-        # g.deg = randomGaussian()*300.0
-
-    print('makeLetters bbox:', maxX, maxY)
+         
     return letters, glyphs, PVector(maxX, maxY)
 
 
 
 def setup():
-    print('setup -0')
     
     global poem, poem_t, bbox, text_size, f, number_of_lines, letters, glyphs
 
-    # with open("poem_1.txt", 'r+') as file: #DOES not work with non-ascii (
+    # with open("poem_1.txt", 'r+') as file: #TODO: DOES not work with non-ascii (
     #     lines = file.readlines()
-    # lines = loadStrings("poem_1.txt")  #DOES not work with non-ascii (
+    # lines = loadStrings("poem_1.txt")  #TODO:  DOES not work with non-ascii (
     
-    print('setup -11')
     poem = poem_t.replace("--", "—").replace(" ", " ")
     print(poem_t)      
     size(1080/screeen_size_divider, 1920/screeen_size_divider, JAVA2D) # Instagram best reel 1920
@@ -306,14 +293,12 @@ def setup():
     smooth(4)
     
     text_size = height // 45
-    print('setup 1')
+
     f = createFont("../_common/Literata-VariableFont_wght.ttf", text_size, True)
-    # print(f)
 
     textFont(f, text_size)
     textSize(text_size)
     
-    print(makeLetters)
     
     letters, glyphs, bbox = makeLetters(poem)
     
@@ -373,8 +358,7 @@ def draw():
     pushMatrix()
     translate((width - bbox.x) / 2, 0) # center text on screen
     scale(0.8) #TODO: calculate it on text size
-        
-    # translate((width - bbox.x) / 2, (height - bbox.y) / 2) # center text on screen
+    
      
     background(0)
     
