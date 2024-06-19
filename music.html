@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Visualization</title>
+    <style>
+        body {
+            background-color: gray;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;            
+        }
+        canvas {
+            background-color: black;
+            width: 80%;
+            height: 80%;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="fileInput" accept=".mid,.midi">
+    <canvas id="musicCanvas" width="800" height="400"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.26/build/Midi.min.js"></script>
+    <script>
+
+        function calculateFrequencyOctave(noteNumber) {
+            return 440 * Math.pow(2, ((noteNumber - 49) % 12) / 12);
+        }
+
+        function calculateLightWavelength(noteNumber) {
+            return 440 * 720 / calculateFrequencyOctave(noteNumber);
+        }
+
+        function wavelengthToRGB(wavelength) {
+            var R, G, B;
+            var gamma = 0.8;
+            var intensityMax = 255;
+            if ((wavelength >= 380) && (wavelength < 440)) {
+                R = -(wavelength - 440) / (440 - 380);
+                G = 0.0;
+                B = 1.0;
+            } else if ((wavelength >= 440) && (wavelength < 490)) {
+                R = 0.0;
+                G = (wavelength - 440) / (490 - 440);
+                B = 1.0;
+            } else if ((wavelength >= 490) && (wavelength < 510)) {
+                R = 0.0;
+                G = 1.0;
+                B = -(wavelength - 510) / (510 - 490);
+            } else if ((wavelength >= 510) && (wavelength < 580)) {
+                R = (wavelength - 510) / (580 - 510);
+                G = 1.0;
+                B = 0.0;
+            } else if ((wavelength >= 580) && (wavelength < 645)) {
+                R = 1.0;
+                G = -(wavelength - 645) / (645 - 580);
+                B = 0.0;
+            } else if ((wavelength >= 645) && (wavelength <= 780)) {
+                R = 1.0;
+                G = 0.0;
+                B = 0.0;
+            } else {
+                R = 0.0;
+                G = 0.0;
+                B = 0.0;
+            }
+            R = Math.round(intensityMax * Math.pow(R, gamma));
+            G = Math.round(intensityMax * Math.pow(G, gamma));
+            B = Math.round(intensityMax * Math.pow(B, gamma));
+            return [R, G, B];
+        }
+
+        function drawGradientRectangle(ctx, x, y, width, height, color, alpha) {
+            var grad = ctx.createLinearGradient(x, y, x + width*2, y);
+            grad.addColorStop(0, `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alpha*0.7})`);
+            grad.addColorStop(1, `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0)`);
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, y, width*2, height);
+        }
+
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var arrayBuffer = e.target.result;
+                var midi = new Midi(arrayBuffer);
+
+                var canvas = document.getElementById('musicCanvas');
+                var ctx = canvas.getContext('2d');
+
+                var notes = [];
+                midi.tracks.forEach(track => {
+                    track.notes.forEach(note => {
+                        notes.push({
+                            start: note.time,
+                            end: note.time + note.duration,
+                            pitch: note.midi,
+                            velocity: note.velocity
+                        });
+                    });
+                });
+
+                // Calculate the scaling factors
+                var minPitch = Math.min(...notes.map(note => note.pitch));
+                var maxPitch = Math.max(...notes.map(note => note.pitch));
+                var maxTime = Math.max(...notes.map(note => note.end));
+                var noteHeight = canvas.height / (maxPitch - minPitch + 1);
+                var timeScalingFactor = 1 * canvas.width / maxTime;
+                
+                notes.forEach(note => {
+                    var wavelength = calculateLightWavelength(note.pitch);
+                    var color = wavelengthToRGB(wavelength);
+
+                    // var wavelength = 400 + (note.pitch - 21) * (700 - 400) / (108 - 21);
+                    // var color = wavelengthToRGB(wavelength);
+                    var x = note.start * timeScalingFactor;
+                    var y = canvas.height - (note.pitch - minPitch + 1) * noteHeight;
+                    var width = (note.end - note.start) * timeScalingFactor;
+                    var height =  canvas.height/ noteHeight;
+
+                    var alpha = note.velocity;
+
+                    // drawGradientRectangle(ctx, x, y, width, height, color, alpha);
+                    drawGradientRectangle(ctx, x, 0, width, canvas.height, color, alpha);
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        });
+    </script>
+</body>
+</html>
